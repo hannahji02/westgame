@@ -330,9 +330,9 @@
     <button class="btn-primary" id="start-btn">게임 시작</button>
 
     <div class="guide-text">
-      좌/우 스와이프로 한 칸 이동 · 위 스와이프로 점프<br>
-      콘은 라인 이동 · 감독은 점프로 회피<br>
-      음료캔은 같은 라인에서 습득 (점프 중 불가)
+      🟠 콘 → 좌/우 스와이프로 라인 회피<br>
+      😡 감독 → 위 스와이프로 점프 통과<br>
+      🟢 음료캔 → 같은 라인에서 습득 (점프 중 X)
     </div>
   </div>
 
@@ -373,10 +373,10 @@ const CFG = {
   DRAG_ANGLE_DEG: 30,
 
   // 게임 타이밍
-  TOTAL_TIME: 30000, // 30초
+  TOTAL_TIME: 28000, // 28초
   TRAINING_END: 20000, // 0~20초
-  DRIBBLE_END: 27000, // 20~27초
-  FEVER_END: 30000, // 27~30초
+  DRIBBLE_END: 25000, // 20~25초 (5초)
+  FEVER_END: 28000, // 25~28초 (3초)
 
   // 점수 (v2)
   SCORE_CONE: 20,
@@ -401,10 +401,10 @@ const CFG = {
 
   // 오브젝트 스폰
   SPAWN_INTERVAL: 750,
-  FALL_SPEED_START: 250,
-  FALL_SPEED_END: 350,
-  BG_SCROLL_START: 200,
-  BG_SCROLL_END: 280,
+  FALL_SPEED_START: 340,
+  FALL_SPEED_END: 480,
+  BG_SCROLL_START: 280,
+  BG_SCROLL_END: 400,
 
   // 슈팅 미션
   SHOOT_PERIOD_MS: 1200, // 1왕복
@@ -429,34 +429,34 @@ const CFG = {
 const PATTERNS = {
   A: [ // 좌익 폭격
     [0.00,1,'cone'],[0.75,2,'cone'],[1.50,1,'cone'],[2.25,1,'boss'],[3.00,2,'cone'],
-    [3.75,3,'cone'],[4.50,1,'cone'],[5.25,1,'energy'],[5.50,2,'boss'],[6.25,1,'cone'],
+    [3.75,3,'cone'],[4.50,1,'cone'],[5.25,1,'energy'],[5.50,1,'cone'],[6.25,2,'boss'],
     [7.00,3,'cone'],[7.75,1,'boss'],[8.50,2,'cone'],[9.25,3,'cone'],[10.00,1,'cone'],
     [10.75,2,'boss'],[11.50,1,'cone'],[12.25,3,'boss'],[13.00,1,'cone'],[13.75,2,'cone'],
-    [14.50,3,'cone'],[15.25,1,'boss'],[16.00,2,'energy'],[16.20,3,'cone'],[17.00,1,'cone'],
+    [14.50,3,'cone'],[15.25,1,'cone'],[16.00,2,'energy'],[16.20,2,'cone'],[17.00,1,'boss'],
     [17.75,2,'boss'],[18.50,3,'cone'],[19.25,1,'boss']
   ],
   B: [ // 지그재그 댄스
     [0.00,1,'cone'],[0.75,3,'cone'],[1.50,1,'cone'],[2.25,3,'boss'],[3.00,1,'boss'],
-    [3.75,2,'cone'],[4.50,1,'cone'],[5.25,3,'cone'],[6.00,2,'energy'],[6.20,1,'boss'],
-    [7.00,3,'cone'],[7.75,1,'cone'],[8.50,3,'boss'],[9.25,2,'cone'],[10.00,1,'cone'],
+    [3.75,2,'cone'],[4.50,1,'cone'],[5.25,3,'cone'],[6.00,2,'energy'],[6.20,2,'cone'],
+    [7.00,3,'boss'],[7.75,1,'cone'],[8.50,3,'boss'],[9.25,2,'cone'],[10.00,1,'cone'],
     [10.75,3,'cone'],[11.50,2,'boss'],[12.25,1,'cone'],[13.00,3,'cone'],[13.75,2,'energy'],
-    [14.00,1,'cone'],[14.75,3,'boss'],[15.50,2,'cone'],[16.25,1,'cone'],[17.00,3,'cone'],
+    [14.00,2,'cone'],[14.75,3,'boss'],[15.50,2,'cone'],[16.25,1,'cone'],[17.00,3,'cone'],
     [17.75,1,'boss'],[18.50,2,'cone'],[19.25,3,'boss']
   ],
   C: [ // 감독 러시
     [0.00,2,'cone'],[0.75,1,'boss'],[1.50,3,'cone'],[2.25,2,'boss'],[3.00,1,'cone'],
-    [3.75,3,'boss'],[4.50,2,'cone'],[5.25,1,'cone'],[6.00,2,'energy'],[6.20,3,'boss'],
-    [7.00,1,'cone'],[7.75,2,'cone'],[8.50,3,'cone'],[9.25,1,'boss'],[10.00,2,'cone'],
+    [3.75,3,'boss'],[4.50,2,'cone'],[5.25,1,'cone'],[6.00,2,'energy'],[6.20,2,'cone'],
+    [7.00,1,'boss'],[7.75,2,'cone'],[8.50,3,'cone'],[9.25,1,'boss'],[10.00,2,'cone'],
     [10.75,3,'cone'],[11.50,1,'cone'],[12.25,2,'boss'],[13.00,3,'cone'],[13.75,1,'cone'],
-    [14.50,2,'cone'],[15.25,3,'boss'],[16.00,1,'energy'],[16.20,2,'cone'],[17.00,3,'cone'],
+    [14.50,2,'cone'],[15.25,3,'cone'],[16.00,1,'energy'],[16.20,1,'cone'],[17.00,3,'boss'],
     [17.75,1,'cone'],[18.50,2,'boss'],[19.25,3,'cone']
   ],
   D: [ // 센터 폭주
     [0.00,2,'cone'],[0.75,2,'cone'],[1.50,1,'cone'],[2.25,2,'boss'],[3.00,3,'cone'],
-    [3.75,2,'cone'],[4.50,1,'boss'],[5.25,2,'cone'],[6.00,3,'energy'],[6.20,2,'cone'],
+    [3.75,2,'cone'],[4.50,1,'boss'],[5.25,2,'cone'],[6.00,3,'energy'],[6.20,3,'cone'],
     [7.00,2,'boss'],[7.75,1,'cone'],[8.50,2,'cone'],[9.25,3,'cone'],[10.00,2,'boss'],
-    [10.75,1,'cone'],[11.50,2,'cone'],[12.25,3,'cone'],[13.00,2,'boss'],[13.75,1,'energy'],
-    [14.00,2,'cone'],[14.75,3,'cone'],[15.50,2,'boss'],[16.25,1,'cone'],[17.00,2,'cone'],
+    [10.75,1,'cone'],[11.50,2,'cone'],[12.25,3,'cone'],[13.00,2,'cone'],[13.75,1,'energy'],
+    [14.00,1,'cone'],[14.75,3,'boss'],[15.50,2,'boss'],[16.25,1,'cone'],[17.00,2,'cone'],
     [17.75,3,'boss'],[18.50,2,'cone'],[19.25,1,'boss']
   ]
 };
@@ -560,6 +560,9 @@ const STATE = {
 
   // 슈팅 미션
   shoot: { active:false, value:0, dir:1, startTime:0, holdStart:0, locked:false, result:null, ready:false, animStart:0 },
+
+  // 드리블 애니메이션
+  dribble: { dir: 1, hitTime: 0, puckX: 0 },
 
   obstacleIdCounter: 0,
 };
@@ -667,8 +670,21 @@ function handleTapDribble() {
   }
   SFX.tap();
   updateScoreDisplay();
-  // 퍽 흔들기 효과
-  STATE.puckShake = 10;
+  // 드리블 애니메이션 트리거
+  STATE.puckShake = 12;
+  STATE.dribble.dir *= -1; // 방향 토글
+  STATE.dribble.hitTime = performance.now();
+  // 파티클 (얼음 가루)
+  const puckCx = W/2 + STATE.dribble.puckX;
+  const puckCy = H/2;
+  for (let i=0; i<5; i++) {
+    STATE.particles.push({
+      x: puckCx, y: puckCy,
+      vx: (Math.random()-0.5)*100, vy: (Math.random()-0.5)*100 - 30,
+      life: 0.3, maxLife: 0.3,
+      color: '#ffffff', size: 2 + Math.random()*2,
+    });
+  }
 }
 
 canvas.addEventListener('touchstart', onTouchStart, {passive:false});
@@ -795,7 +811,9 @@ function update(dt, now) {
 
     // 충돌 판정
     if (now > STATE.player.invincibleUntil && !obs.collided) {
-      if (obs.lane === STATE.player.lane) {
+      // 감독은 lane 무시 (가로 장벽), 콘/캔은 같은 lane만 체크
+      const laneMatch = (obs.type === 'boss') || (obs.lane === STATE.player.lane);
+      if (laneMatch) {
         const dist = Math.abs(obs.y - STATE.player.y);
         if (dist < CFG.COLLISION_DIST) {
           const isJumping = now < STATE.player.jumpUntil;
@@ -1117,42 +1135,158 @@ function render() {
     ctx.fillRect(0, 0, W, H);
   }
 
-  // 드리블/피버 - 중앙 퍽
+  // 드리블/피버 - 플레이어가 스틱으로 퍽 드리블
   if (STATE.phase === 'dribble' || STATE.phase === 'fever') {
-    const cx = W/2, cy = H/2;
+    const now = performance.now();
+    const isFever = STATE.phase === 'fever';
+
+    // 빙판 배경 + 짧은 잔영 스크롤 (드리블 느낌)
+    ctx.fillStyle = CFG.COL_BG_ICE;
+    ctx.fillRect(0, 0, W, H);
+    if (isFever) {
+      ctx.fillStyle = 'rgba(255, 50, 80, 0.15)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // 드리블 영역 표시 (둥근 영역)
+    const dribbleY = H * 0.55;
+
+    // 퍽 위치 보간 (탭 시점에 빠르게 이동, 그 외 천천히 복원)
+    const targetPuckX = STATE.dribble.dir * 80;
+    STATE.dribble.puckX += (targetPuckX - STATE.dribble.puckX) * 0.35;
+
+    const puckX = W/2 + STATE.dribble.puckX;
+    const puckY = dribbleY;
+
+    // 퍽 그림자
     const shake = STATE.puckShake || 0;
     if (STATE.puckShake) STATE.puckShake = Math.max(0, STATE.puckShake - 0.8);
-    // 퍽 그림자
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.beginPath();
-    ctx.ellipse(cx + 4, cy + 8, 70, 18, 0, 0, Math.PI*2);
+    ctx.ellipse(puckX + 4, puckY + 12, 32, 9, 0, 0, Math.PI*2);
     ctx.fill();
+
     // 퍽 본체
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath();
-    ctx.ellipse(cx + (Math.random()-0.5)*shake, cy + (Math.random()-0.5)*shake, 70, 22, 0, 0, Math.PI*2);
+    ctx.ellipse(
+      puckX + (Math.random()-0.5)*shake*0.3,
+      puckY + (Math.random()-0.5)*shake*0.3,
+      36, 11, 0, 0, Math.PI*2);
     ctx.fill();
     ctx.strokeStyle = '#444';
     ctx.lineWidth = 3;
     ctx.stroke();
+    // 퍽 하이라이트
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(puckX - 6, puckY - 4, 18, 4, 0, 0, Math.PI*2);
+    ctx.fill();
 
-    // 안내 텍스트
-    ctx.fillStyle = STATE.phase === 'fever' ? '#fff' : '#1a3060';
-    ctx.font = 'bold 48px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    if (STATE.phase === 'fever') {
-      ctx.shadowColor = '#ff0';
-      ctx.shadowBlur = 20;
-      ctx.fillText('🔥 FEVER 🔥', W/2, H/2 - 140);
-      ctx.shadowBlur = 0;
-      ctx.font = 'bold 32px sans-serif';
-      ctx.fillText('+50 PER TAP', W/2, H/2 - 90);
-    } else {
-      ctx.fillText('연타! 연타!', W/2, H/2 - 140);
-      ctx.font = 'bold 28px sans-serif';
-      ctx.fillText('+30 PER TAP', W/2, H/2 - 90);
+    // === 플레이어 (가운데, 약간 위) ===
+    const playerCx = W/2;
+    const playerCy = dribbleY - 110;
+
+    // 그림자
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.ellipse(playerCx + 4, playerCy + 42, CFG.PLAYER_RADIUS * 0.9, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // === 스틱 (좌우 토글 애니메이션) ===
+    // 탭 후 100ms 동안 스윙 모션
+    const timeSinceHit = now - STATE.dribble.hitTime;
+    const swingT = Math.max(0, Math.min(1, timeSinceHit / 120));
+    const swingPower = Math.sin(swingT * Math.PI); // 0->1->0
+    const stickAngle = STATE.dribble.dir * (0.5 + swingPower * 0.4); // 기본 각도 + 스윙
+
+    ctx.save();
+    ctx.translate(playerCx, playerCy + 5);
+    ctx.rotate(stickAngle);
+
+    // 스틱 손잡이
+    ctx.strokeStyle = CFG.COL_PLAYER_STICK;
+    ctx.lineWidth = 7;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, 105);
+    ctx.stroke();
+
+    // 스틱 블레이드 (끝 부분)
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.moveTo(-2, 100);
+    ctx.lineTo(22, 115);
+    ctx.stroke();
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-2, 100);
+    ctx.lineTo(22, 115);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // === 플레이어 헬멧 ===
+    const grad = ctx.createRadialGradient(playerCx-10, playerCy-10, 5, playerCx, playerCy, CFG.PLAYER_RADIUS);
+    grad.addColorStop(0, '#4a8fff');
+    grad.addColorStop(1, CFG.COL_PLAYER);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(playerCx, playerCy, CFG.PLAYER_RADIUS, 0, Math.PI*2);
+    ctx.fill();
+
+    // 페이스 가드
+    ctx.fillStyle = '#222';
+    ctx.beginPath();
+    ctx.arc(playerCx, playerCy + 8, CFG.PLAYER_RADIUS * 0.55, 0.2, Math.PI - 0.2);
+    ctx.fill();
+    ctx.strokeStyle = '#777';
+    ctx.lineWidth = 1.5;
+    for (let i=0; i<3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(playerCx - 18, playerCy + 10 + i*5);
+      ctx.lineTo(playerCx + 18, playerCy + 10 + i*5);
+      ctx.stroke();
     }
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('WEST', playerCx, playerCy - 10);
+
+    // === 안내 텍스트 ===
+    if (isFever) {
+      ctx.shadowColor = '#ff0';
+      ctx.shadowBlur = 24;
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 56px sans-serif';
+      ctx.fillText('🔥 FEVER 🔥', W/2, 130);
+      ctx.shadowBlur = 0;
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillStyle = '#ff3355';
+      ctx.fillText('+50 PER TAP', W/2, 175);
+    } else {
+      ctx.fillStyle = '#1a3060';
+      ctx.font = 'bold 48px sans-serif';
+      ctx.fillText('연타! 연타!', W/2, 130);
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillStyle = '#446';
+      ctx.fillText('+30 PER TAP', W/2, 165);
+    }
+
+    // 드리블 트레일 라인 (퍽 움직임 시각화)
+    ctx.strokeStyle = isFever ? 'rgba(255,100,100,0.3)' : 'rgba(100,140,200,0.3)';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 100, dribbleY + 30);
+    ctx.lineTo(W/2 + 100, dribbleY + 30);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
     ctx.textAlign = 'start';
     ctx.textBaseline = 'alphabetic';
 
@@ -1303,61 +1437,162 @@ function drawCone(x, y) {
 }
 
 function drawBoss(x, y, avoided) {
+  // x, y는 더 이상 사용 안 함 (lane 무시) — 화면 전체 가로 장벽
   ctx.save();
-  if (avoided) ctx.globalAlpha = 0.45;
+  if (avoided) ctx.globalAlpha = 0.4;
 
-  // 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  const cx = W / 2;
+  const cy = y; // y만 활용 (낙하 위치)
+  const barW = W - 20; // 화면 전체 너비 - 약간 여백
+  const barH = 70;
+
+  // === 그림자 (몸 아래) ===
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath();
-  ctx.ellipse(x + 3, y + 32, 32, 8, 0, 0, Math.PI*2);
+  ctx.ellipse(cx + 5, cy + barH/2 + 10, barW/2 * 0.85, 12, 0, 0, Math.PI*2);
   ctx.fill();
 
-  // 얼굴 (둥근 사각형 느낌)
-  const faceColor = avoided ? '#888' : CFG.COL_BOSS;
-  ctx.fillStyle = faceColor;
-  ctx.beginPath();
-  ctx.arc(x, y, 32, 0, Math.PI*2);
+  // === 몸통 (옆으로 누운 둥글둥글한 게을킹 포즈) ===
+  const bodyColor = avoided ? '#888' : '#d4a574';
+  const bodyDark = avoided ? '#555' : '#a07845';
+
+  // 몸통 메인 (둥근 직사각형)
+  ctx.fillStyle = bodyColor;
+  roundRect(cx - barW/2, cy - barH/2, barW, barH, 35);
   ctx.fill();
 
-  // 머리카락
-  ctx.fillStyle = avoided ? '#555' : '#3a2a1a';
+  // 배 흰색 (게을킹 배)
+  ctx.fillStyle = avoided ? '#aaa' : '#f0d8b8';
+  roundRect(cx - barW/2 + 60, cy - barH/2 + 15, barW - 120, barH - 30, 20);
+  ctx.fill();
+
+  // === 양팔 (좌우 끝으로 뻗은 게을킹 손) ===
+  ctx.fillStyle = bodyColor;
+  // 왼손
   ctx.beginPath();
-  ctx.arc(x, y - 8, 32, Math.PI * 1.1, Math.PI * 1.9);
+  ctx.arc(cx - barW/2 + 15, cy, 28, 0, Math.PI*2);
+  ctx.fill();
+  // 오른손
+  ctx.beginPath();
+  ctx.arc(cx + barW/2 - 15, cy, 28, 0, Math.PI*2);
+  ctx.fill();
+  // 손가락 (3개씩, 양쪽)
+  ctx.fillStyle = bodyDark;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.arc(cx - barW/2 + 8, cy - 12 + i * 12, 5, 0, Math.PI*2);
+    ctx.arc(cx + barW/2 - 8, cy - 12 + i * 12, 5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // === 외곽선 ===
+  ctx.strokeStyle = bodyDark;
+  ctx.lineWidth = 2.5;
+  roundRect(cx - barW/2, cy - barH/2, barW, barH, 35);
+  ctx.stroke();
+
+  // === 감독 얼굴 (중앙에 배치) ===
+  const faceX = cx;
+  const faceY = cy - 5;
+  const faceR = 30;
+
+  // 얼굴 베이스
+  ctx.fillStyle = avoided ? '#999' : '#e8b888';
+  ctx.beginPath();
+  ctx.arc(faceX, faceY, faceR, 0, Math.PI*2);
+  ctx.fill();
+
+  // 머리카락 (옆머리 + 위)
+  ctx.fillStyle = avoided ? '#444' : '#2a1a0a';
+  ctx.beginPath();
+  ctx.arc(faceX, faceY - 8, faceR, Math.PI * 1.05, Math.PI * 1.95);
+  ctx.fill();
+  // 옆머리 디테일
+  ctx.beginPath();
+  ctx.arc(faceX - 24, faceY - 5, 8, 0, Math.PI*2);
+  ctx.arc(faceX + 24, faceY - 5, 8, 0, Math.PI*2);
   ctx.fill();
 
   // 눈썹 (화남)
-  ctx.strokeStyle = avoided ? '#444' : '#2a1a0a';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = avoided ? '#333' : '#1a0a00';
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(x - 18, y - 5);
-  ctx.lineTo(x - 6, y - 2);
-  ctx.moveTo(x + 18, y - 5);
-  ctx.lineTo(x + 6, y - 2);
+  ctx.moveTo(faceX - 16, faceY - 3);
+  ctx.lineTo(faceX - 5, faceY);
+  ctx.moveTo(faceX + 16, faceY - 3);
+  ctx.lineTo(faceX + 5, faceY);
   ctx.stroke();
 
   // 눈
   ctx.fillStyle = '#000';
   ctx.beginPath();
-  ctx.arc(x - 11, y + 3, 2.5, 0, Math.PI*2);
-  ctx.arc(x + 11, y + 3, 2.5, 0, Math.PI*2);
+  ctx.arc(faceX - 10, faceY + 4, 3, 0, Math.PI*2);
+  ctx.arc(faceX + 10, faceY + 4, 3, 0, Math.PI*2);
   ctx.fill();
 
-  // 입 (찡그림)
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 2.5;
+  // 입 (벌리고 호통)
+  ctx.fillStyle = '#5a1010';
   ctx.beginPath();
-  ctx.moveTo(x - 10, y + 16);
-  ctx.quadraticCurveTo(x, y + 10, x + 10, y + 16);
+  ctx.ellipse(faceX, faceY + 16, 8, 5, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // 호루라기 (옆에)
+  // 호루라기 (회피 안된 상태에서만)
   if (!avoided) {
     ctx.fillStyle = '#c0c0c0';
     ctx.beginPath();
-    ctx.arc(x + 22, y + 20, 6, 0, Math.PI*2);
+    ctx.arc(faceX + 25, faceY + 14, 7, 0, Math.PI*2);
     ctx.fill();
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // 호루라기 줄
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(faceX + 18, faceY + 14);
+    ctx.lineTo(faceX + 10, faceY + 8);
+    ctx.stroke();
   }
+
+  // === 경고 화살표 (점프 유도, 회피 전에만) ===
+  if (!avoided) {
+    const arrowY = cy - barH/2 - 18;
+    const pulse = (Math.sin(performance.now() * 0.008) + 1) / 2;
+    ctx.fillStyle = `rgba(255, 60, 60, ${0.6 + pulse * 0.4})`;
+    ctx.beginPath();
+    ctx.moveTo(cx, arrowY);
+    ctx.lineTo(cx - 12, arrowY - 14);
+    ctx.lineTo(cx + 12, arrowY - 14);
+    ctx.closePath();
+    ctx.fill();
+    // "JUMP!" 텍스트
+    ctx.fillStyle = `rgba(255, 60, 60, ${0.7 + pulse * 0.3})`;
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('JUMP!', cx, arrowY - 22);
+    ctx.textAlign = 'start';
+  }
+
   ctx.restore();
+}
+
+// 둥근 사각형 그리기 헬퍼
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 function drawEnergy(x, y) {
@@ -1557,7 +1792,6 @@ function drawGauge(value, locked=false) {
   ctx.fillRect(gx - gw/2, gy - gh/2, gw, gh);
 
   // 컬러 존
-  // 0~50: 회색, 51~80: 노랑, 81~95: 주황, 96~100: 빨강 깜빡
   const zones = [
     [0, 50, '#444'],
     [50, 80, '#cc9900'],
@@ -1571,26 +1805,87 @@ function drawGauge(value, locked=false) {
     ctx.fillRect(gx - gw/2, y2, gw, y1 - y2);
   }
 
+  // === 잔상 효과 (locked 아닐 때만) ===
+  if (!locked) {
+    // 잔상 위치 계산: 최근 5개 위치를 sin 곡선으로 시뮬레이션
+    const sh = STATE.shoot;
+    const now = performance.now();
+    for (let i = 1; i <= 6; i++) {
+      const trailT = i * 25; // 25ms씩 과거
+      // 과거 위치 추정 (현재 dir 기준 역산)
+      const speed = (sh.value > CFG.SHOOT_JACKPOT_ZONE) ? CFG.SHOOT_JACKPOT_MULT : 1;
+      const baseSpeed = 100 / (CFG.SHOOT_PERIOD_MS / 2 / 1000);
+      const deltaV = baseSpeed * speed * (trailT/1000) * sh.dir;
+      let trailV = sh.value - deltaV;
+      // 0~100 바운스 처리
+      if (trailV < 0) trailV = -trailV;
+      if (trailV > 100) trailV = 200 - trailV;
+      trailV = Math.max(0, Math.min(100, trailV));
+
+      const alpha = (1 - i/7) * 0.4;
+      const trailY = gy + gh/2 - (trailV/100) * gh;
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(gx, trailY, 6 + (1 - i/7) * 4, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // 양옆 스피드 라인 (왕복 강조)
+    const speedPulse = (Math.sin(now * 0.025) + 1) / 2;
+    ctx.strokeStyle = `rgba(255, 220, 50, ${0.4 + speedPulse * 0.5})`;
+    ctx.lineWidth = 2;
+    for (let j = 0; j < 3; j++) {
+      const yPos = gy - gh/2 + (j * gh / 3) + (now * 0.5 % (gh/3));
+      ctx.beginPath();
+      ctx.moveTo(gx + gw/2 + 5, yPos);
+      ctx.lineTo(gx + gw/2 + 12, yPos);
+      ctx.moveTo(gx - gw/2 - 12, yPos);
+      ctx.lineTo(gx - gw/2 - 5, yPos);
+      ctx.stroke();
+    }
+  }
+
   // 외곽선
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 3;
   ctx.strokeRect(gx - gw/2, gy - gh/2, gw, gh);
 
-  // 화살표 (현재 값)
+  // 현재 화살표 (메인)
   const arrowY = gy + gh/2 - (value/100) * gh;
-  ctx.fillStyle = locked ? '#ffd700' : '#fff';
-  ctx.beginPath();
-  ctx.moveTo(gx - gw/2 - 5, arrowY);
-  ctx.lineTo(gx - gw/2 - 25, arrowY - 12);
-  ctx.lineTo(gx - gw/2 - 25, arrowY + 12);
-  ctx.closePath();
-  ctx.fill();
+  // 화살표 글로우
+  if (!locked) {
+    ctx.save();
+    ctx.shadowColor = '#ffff00';
+    ctx.shadowBlur = 16;
+    ctx.fillStyle = '#ffff00';
+    ctx.beginPath();
+    ctx.moveTo(gx - gw/2 - 5, arrowY);
+    ctx.lineTo(gx - gw/2 - 28, arrowY - 14);
+    ctx.lineTo(gx - gw/2 - 28, arrowY + 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  } else {
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath();
+    ctx.moveTo(gx - gw/2 - 5, arrowY);
+    ctx.lineTo(gx - gw/2 - 28, arrowY - 14);
+    ctx.lineTo(gx - gw/2 - 28, arrowY + 14);
+    ctx.closePath();
+    ctx.fill();
+  }
 
-  // 숫자 표시
+  // 숫자 표시 (큼직하게)
   ctx.fillStyle = locked ? '#ffd700' : '#fff';
-  ctx.font = 'bold 28px sans-serif';
+  ctx.font = 'bold 42px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(Math.round(value), gx, gy + gh/2 + 32);
+  // 숫자 글로우
+  if (!locked) {
+    ctx.shadowColor = '#ffff00';
+    ctx.shadowBlur = 20;
+  }
+  ctx.fillText(Math.round(value), gx, gy + gh/2 + 52);
+  ctx.shadowBlur = 0;
   ctx.textAlign = 'start';
 
   // 눈금
@@ -1603,8 +1898,20 @@ function drawGauge(value, locked=false) {
     ctx.lineTo(gx + gw/2 + 8, yy);
     ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText(v, gx + gw/2 + 10, yy + 4);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(v, gx + gw/2 + 10, yy + 5);
+  }
+
+  // 게이지 위 "고고고!" 표시 (locked 아닐 때 깜빡임)
+  if (!locked) {
+    const blink = Math.sin(performance.now() * 0.015) > 0;
+    if (blink) {
+      ctx.fillStyle = '#ff3355';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('지금!', gx, gy - gh/2 - 12);
+      ctx.textAlign = 'start';
+    }
   }
 }
 
