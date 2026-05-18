@@ -2652,153 +2652,245 @@ function renderShooting() {
   const sh = STATE.shoot;
   const now = performance.now();
 
-  // 어두운 배경
-  ctx.fillStyle = '#0a0f1c';
+  // === 배경 그라데이션 (스타디움 분위기) ===
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, '#0a1228');
+  bgGrad.addColorStop(0.4, '#142048');
+  bgGrad.addColorStop(0.55, '#0a1228');
+  bgGrad.addColorStop(1, '#050816');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
+
+  // 관중 실루엣 (상단 배경, 어두운 검정 점들)
+  if (!STATE.crowdDots) {
+    STATE.crowdDots = [];
+    for (let i = 0; i < 80; i++) {
+      STATE.crowdDots.push({
+        x: Math.random() * W,
+        y: 20 + Math.random() * 50,
+        size: 6 + Math.random() * 4,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+  for (const dot of STATE.crowdDots) {
+    const wave = Math.sin(now * 0.002 + dot.phase) * 2;
+    ctx.fillStyle = '#020410';
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y + wave, dot.size, 0, Math.PI*2);
+    ctx.fill();
+    // 머리 위 살짝 하이라이트
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y + wave - 2, dot.size * 0.4, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // 관중석 라인 (어두운 가로 띠)
+  ctx.fillStyle = 'rgba(2, 4, 16, 0.8)';
+  ctx.fillRect(0, 0, W, 80);
+
+  // 스타디움 조명 빔 (양옆에서 비추는 효과)
+  const lightT = (Math.sin(now * 0.0008) + 1) / 2;
+  const beamGrad1 = ctx.createLinearGradient(0, 0, W, H);
+  beamGrad1.addColorStop(0, `rgba(120, 200, 255, ${0.15 + lightT * 0.05})`);
+  beamGrad1.addColorStop(0.4, 'rgba(120, 200, 255, 0)');
+  ctx.fillStyle = beamGrad1;
+  ctx.fillRect(0, 0, W, H * 0.7);
+
+  // === 빙판 (하단) ===
+  const iceY = H * 0.52;
+  // 빙판 그라데이션 (원근감)
+  const iceGrad = ctx.createLinearGradient(0, iceY, 0, H);
+  iceGrad.addColorStop(0, '#a8c4e5');
+  iceGrad.addColorStop(0.3, '#d4e2f2');
+  iceGrad.addColorStop(1, '#f0f6fc');
+  ctx.fillStyle = iceGrad;
+  ctx.fillRect(0, iceY, W, H - iceY);
+
+  // 빙판 반사 (스타디움 빛이 빙판에 비치는 효과)
+  const iceReflect = ctx.createLinearGradient(0, iceY, 0, iceY + 100);
+  iceReflect.addColorStop(0, 'rgba(120, 200, 255, 0.25)');
+  iceReflect.addColorStop(1, 'rgba(120, 200, 255, 0)');
+  ctx.fillStyle = iceReflect;
+  ctx.fillRect(0, iceY, W, 100);
+
+  // === 골 크리스 (반원 푸른 페인트 영역) ===
+  const goalY = iceY - 30; // 골대 바닥 라인
+  const creaseR = 110;
+  // 푸른 페인트 채움
+  ctx.fillStyle = 'rgba(77, 159, 255, 0.35)';
+  ctx.beginPath();
+  ctx.arc(W/2, goalY, creaseR, 0, Math.PI, false);
+  ctx.closePath();
+  ctx.fill();
+  // 빨강 외곽선
+  ctx.strokeStyle = '#cc1f3a';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(W/2, goalY, creaseR, 0, Math.PI, false);
+  ctx.stroke();
+  // 골 라인 (반원 연결)
+  ctx.beginPath();
+  ctx.moveTo(0, goalY);
+  ctx.lineTo(W/2 - creaseR, goalY);
+  ctx.moveTo(W/2 + creaseR, goalY);
+  ctx.lineTo(W, goalY);
+  ctx.stroke();
+
+  // 빙판 갈린 자국 (작은 디테일)
+  if (!STATE.shootIceScratches) {
+    STATE.shootIceScratches = [];
+    for (let i=0; i<25; i++) {
+      STATE.shootIceScratches.push({
+        x: Math.random() * W,
+        y: iceY + 20 + Math.random() * (H - iceY - 40),
+        len: 15 + Math.random() * 30,
+        angle: (Math.random() - 0.5) * 0.5,
+      });
+    }
+  }
+  for (const sc of STATE.shootIceScratches) {
+    ctx.strokeStyle = `rgba(140, 180, 220, 0.4)`;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(sc.x, sc.y);
+    ctx.lineTo(sc.x + Math.cos(sc.angle) * sc.len, sc.y + Math.sin(sc.angle) * sc.len);
+    ctx.stroke();
+  }
 
   // === 좌/우 영역 분할 표시 (준비 완료 후 항상) ===
   if (sh.ready && !sh.locked) {
     const isHolding = sh.holdStart > 0;
-    // 왼쪽 영역
-    const leftAlpha = !isHolding ? 0.1 : (sh.side === 'left' ? 0.3 : 0.05);
+    const leftAlpha = !isHolding ? 0.08 : (sh.side === 'left' ? 0.28 : 0.04);
     ctx.fillStyle = `rgba(100, 180, 255, ${leftAlpha})`;
-    ctx.fillRect(0, 0, W/2, H);
-    // 오른쪽 영역
-    const rightAlpha = !isHolding ? 0.1 : (sh.side === 'right' ? 0.3 : 0.05);
+    ctx.fillRect(0, iceY + 30, W/2, H - iceY - 30);
+    const rightAlpha = !isHolding ? 0.08 : (sh.side === 'right' ? 0.28 : 0.04);
     ctx.fillStyle = `rgba(255, 180, 100, ${rightAlpha})`;
-    ctx.fillRect(W/2, 0, W/2, H);
-    // 가운데 구분선
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillRect(W/2, iceY + 30, W/2, H - iceY - 30);
+    // 구분선
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
     ctx.lineWidth = 3;
-    ctx.setLineDash([12, 8]);
+    ctx.setLineDash([14, 10]);
     ctx.beginPath();
-    ctx.moveTo(W/2, 0);
+    ctx.moveTo(W/2, iceY + 30);
     ctx.lineTo(W/2, H);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 영역 라벨
     if (isHolding) {
-      ctx.font = 'bold 38px sans-serif';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#0a1228';
+      ctx.lineWidth = 5;
+      ctx.font = '900 38px "Noto Sans KR", sans-serif';
       ctx.textAlign = 'center';
-      ctx.shadowColor = '#000';
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = sh.side === 'left' ? 'rgba(180, 230, 255, 1)' : 'rgba(180, 230, 255, 0.35)';
-      ctx.fillText('◄ LEFT', W/4, H * 0.45);
-      ctx.fillStyle = sh.side === 'right' ? 'rgba(255, 220, 180, 1)' : 'rgba(255, 220, 180, 0.35)';
-      ctx.fillText('RIGHT ►', W*3/4, H * 0.45);
-      ctx.shadowBlur = 0;
+      // 좌측
+      ctx.fillStyle = sh.side === 'left' ? '#4d9fff' : 'rgba(120, 160, 200, 0.4)';
+      if (sh.side === 'left') ctx.strokeText('◄ LEFT', W/4, iceY + 80);
+      ctx.fillText('◄ LEFT', W/4, iceY + 80);
+      // 우측
+      ctx.fillStyle = sh.side === 'right' ? '#ff9a4d' : 'rgba(200, 160, 120, 0.4)';
+      if (sh.side === 'right') ctx.strokeText('RIGHT ►', W*3/4, iceY + 80);
+      ctx.fillText('RIGHT ►', W*3/4, iceY + 80);
       ctx.textAlign = 'start';
     }
   }
 
-  // 빙판 (희미하게)
-  ctx.fillStyle = 'rgba(180, 200, 240, 0.1)';
-  ctx.fillRect(0, H * 0.55, W, H * 0.45);
-
-  // === 골대 ===
-  const goalY = H * 0.18;
-  const goalW = W * 0.65;
-  const goalX = (W - goalW) / 2;
-  const goalH = 110;
-
-  // 그물 음영
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(goalX, goalY, goalW, goalH);
-
-  // 그물 라인
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-  ctx.lineWidth = 1;
-  for (let i=0; i<10; i++) {
-    ctx.beginPath();
-    ctx.moveTo(goalX + (goalW / 10) * i, goalY);
-    ctx.lineTo(goalX + (goalW / 10) * i, goalY + goalH);
-    ctx.stroke();
-  }
-  for (let i=0; i<6; i++) {
-    ctx.beginPath();
-    ctx.moveTo(goalX, goalY + (goalH / 6) * i);
-    ctx.lineTo(goalX + goalW, goalY + (goalH / 6) * i);
-    ctx.stroke();
-  }
-
-  // 골인 시 그물 흔들림
-  let goalShake = 0;
-  if (sh.animPhase === 'goal') {
-    goalShake = Math.sin((now - sh.animStart) * 0.03) * 8;
-  }
-
-  // 골 프레임
-  ctx.strokeStyle = '#cc0000';
-  ctx.lineWidth = 8;
-  ctx.strokeRect(goalX + goalShake, goalY, goalW, goalH);
+  // === 골대 (입체적) ===
+  drawGoalNet(W/2, goalY, sh);
 
   // === 골리 (좌우 움직임) ===
-  const goalieCenter = goalX + goalW / 2;
-  const goalieMaxOffset = (goalW / 2) * CFG.GOALIE_RANGE_RATIO;
+  const goalieCenter = W/2;
+  const goalieMaxOffset = 130;
   let goalieX, goalieY;
-
   if (sh.locked && sh.result) {
-    // 슛 발사 시점 위치 고정 (사인 사용)
     const lockedNorm = Math.sin(sh.goalieT * Math.PI * 2) * CFG.GOALIE_RANGE_RATIO;
-    goalieX = goalieCenter + lockedNorm * (goalW / 2);
-    goalieY = goalY + goalH/2 + 25;
-
-    // 미스 애니메이션
+    goalieX = goalieCenter + lockedNorm * goalieMaxOffset;
+    goalieY = goalY - 8;
     if (sh.animPhase === 'miss') {
       const t = Math.min(1, (now - sh.animStart) / 1500);
-      if (sh.result.reason === 'same_side' || sh.result.reason === 'center_save') {
-        // 골리가 다이빙으로 쳐냄 - 슈팅 방향 쪽으로 살짝 더 이동
-        const dive = sh.result.side === 'left' ? -25 : 25;
-        goalieX += dive * Math.sin(t * Math.PI);
-        goalieY += Math.sin(t * Math.PI) * 15;
-      }
+      const dive = sh.result.side === 'left' ? -45 : 45;
+      goalieX += dive * Math.sin(t * Math.PI);
+      goalieY += Math.sin(t * Math.PI) * 25;
     }
     if (sh.animPhase === 'goal') {
-      // 골리가 뒤로 무너짐
       const t = Math.min(1, (now - sh.animStart) / 2000);
-      goalieY += t * 60;
+      goalieY += t * 50;
     }
   } else {
-    // 현재 골리 위치
     const norm = Math.sin(sh.goalieT * Math.PI * 2) * CFG.GOALIE_RANGE_RATIO;
-    goalieX = goalieCenter + norm * (goalW / 2);
-    goalieY = goalY + goalH/2 + 25;
+    goalieX = goalieCenter + norm * goalieMaxOffset;
+    goalieY = goalY - 8;
   }
-  drawGoalie(goalieX, goalieY);
+  drawGoalie(goalieX, goalieY, sh);
+
+  // === 골 라이트 (골인 시 점등) ===
+  if (sh.animPhase === 'goal') {
+    const lightPulse = Math.sin(now * 0.025) > 0;
+    if (lightPulse) {
+      ctx.save();
+      // 골대 양쪽 위 빨간 라이트
+      const lightGrad = ctx.createRadialGradient(W/2, goalY - 120, 0, W/2, goalY - 120, 300);
+      lightGrad.addColorStop(0, 'rgba(255, 30, 50, 0.7)');
+      lightGrad.addColorStop(0.5, 'rgba(255, 30, 50, 0.3)');
+      lightGrad.addColorStop(1, 'rgba(255, 30, 50, 0)');
+      ctx.fillStyle = lightGrad;
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
+  }
 
   // === 퍽 ===
-  let puckX = W/2, puckY = H * 0.75;
+  let puckX = W/2, puckY = H * 0.85;
   if (sh.animPhase === 'puckFly') {
     const t = (now - sh.animStart) / 700;
-    // 슛 방향에 따라 좌/우로 살짝 휘면서 골대로
-    const targetX = sh.result.side === 'left' ? goalX + goalW * 0.2 : goalX + goalW * 0.8;
+    const targetX = sh.result.side === 'left' ? W/2 - creaseR * 0.7 : W/2 + creaseR * 0.7;
     puckX = W/2 + (targetX - W/2) * t;
-    puckY = H * 0.75 + (goalY + goalH/2 - H * 0.75) * t;
+    puckY = H * 0.85 + (goalY - 10 - H * 0.85) * t;
   } else if (sh.animPhase === 'goal') {
-    const targetX = sh.result.side === 'left' ? goalX + goalW * 0.2 : goalX + goalW * 0.8;
+    const targetX = sh.result.side === 'left' ? W/2 - creaseR * 0.7 : W/2 + creaseR * 0.7;
     puckX = targetX;
-    puckY = goalY + goalH/2;
+    puckY = goalY - 30;
   } else if (sh.animPhase === 'miss') {
     puckX = goalieX;
-    puckY = goalieY;
+    puckY = goalieY - 5;
+  }
+
+  // 퍽 트레일 (날아갈 때)
+  if (sh.animPhase === 'puckFly') {
+    const t = (now - sh.animStart) / 700;
+    const targetX = sh.result.side === 'left' ? W/2 - creaseR * 0.7 : W/2 + creaseR * 0.7;
+    for (let i=1; i<=6; i++) {
+      const trailT = Math.max(0, t - i * 0.05);
+      const tx = W/2 + (targetX - W/2) * trailT;
+      const ty = H * 0.85 + (goalY - 10 - H * 0.85) * trailT;
+      const alpha = (1 - i/7) * 0.6;
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.beginPath();
+      ctx.ellipse(tx, ty, 22 - i*2, 7 - i*0.5, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
   }
 
   // 퍽 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
   ctx.beginPath();
-  ctx.ellipse(puckX + 3, puckY + 14, 22, 6, 0, 0, Math.PI*2);
+  ctx.ellipse(puckX + 4, puckY + 14, 24, 7, 0, 0, Math.PI*2);
   ctx.fill();
-  // 퍽
+  // 퍽 본체 (두꺼운 외곽선)
   ctx.fillStyle = '#1a1a1a';
   ctx.beginPath();
-  ctx.ellipse(puckX, puckY, 24, 8, 0, 0, Math.PI*2);
+  ctx.ellipse(puckX, puckY, 26, 9, 0, 0, Math.PI*2);
   ctx.fill();
-  ctx.strokeStyle = '#555';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 2.5;
   ctx.stroke();
+  ctx.fillStyle = '#3a3a3a';
+  ctx.beginPath();
+  ctx.ellipse(puckX, puckY - 1.5, 26, 4, 0, 0, Math.PI*2);
+  ctx.fill();
 
-  // === 게이지 (준비 완료 후 항상 표시, 누르기 전엔 0 정지) ===
+  // === 게이지 (준비 완료 후 항상) ===
   if (sh.ready && !sh.locked) {
     drawGaugeHorizontal(sh.value, sh.value > CFG.SHOOT_JACKPOT_ZONE);
   }
@@ -2806,41 +2898,146 @@ function renderShooting() {
   // === 안내 텍스트 ===
   if (sh.ready && !sh.locked) {
     if (sh.holdStart === 0) {
-      ctx.fillStyle = '#fff';
-      ctx.font = '900 38px "Noto Sans KR", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = '#ffd700';
-      ctx.shadowBlur = 20;
-      ctx.fillText('FAKE THE GOALIE', W/2, H * 0.52);
-      ctx.shadowBlur = 0;
-      ctx.font = '500 16px "Noto Sans KR", sans-serif';
+      // 메인 안내 (두꺼운 외곽선 닌텐도 스타일)
+      drawComicText(W/2, H * 0.52, 'FAKE THE GOALIE', 40, '#ffd700', '#0a1228', 5);
+      ctx.font = '500 14px "Noto Sans KR", sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.fillText('HOLD ANY SIDE · RELEASE TO SHOOT', W/2, H * 0.58);
+      ctx.textAlign = 'center';
+      ctx.fillText('HOLD ANY SIDE · RELEASE TO SHOOT', W/2, H * 0.57);
       // 펄스 화살표
       const pulse = (Math.sin(now * 0.005) + 1) / 2;
       ctx.fillStyle = `rgba(255, 215, 0, ${0.6 + pulse * 0.4})`;
-      ctx.font = 'bold 48px sans-serif';
-      ctx.fillText('▼', W/4, H * 0.72);
-      ctx.fillText('▼', W*3/4, H * 0.72);
+      ctx.font = '900 32px sans-serif';
+      ctx.fillText('▼', W/4, H * 0.7);
+      ctx.fillText('▼', W*3/4, H * 0.7);
       ctx.textAlign = 'start';
     } else {
-      ctx.fillStyle = '#ffd700';
-      ctx.font = '900 18px "Noto Sans KR", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = '#000';
-      ctx.shadowBlur = 8;
-      ctx.fillText('RELEASE NOW!', W/2, H * 0.92);
-      ctx.shadowBlur = 0;
-      ctx.textAlign = 'start';
+      drawComicText(W/2, H * 0.93, 'RELEASE NOW!', 24, '#ffd700', '#0a1228', 4);
     }
   }
 
-  // === 상단 점수 ===
-  ctx.fillStyle = '#ffd700';
-  ctx.font = '900 20px "Noto Sans KR", sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('SCORE  ' + STATE.score, 20, 32);
-  ctx.textAlign = 'start';
+  // === 상단 점수 (HUD 카드 스타일) ===
+  ctx.save();
+  ctx.fillStyle = 'rgba(5, 8, 22, 0.85)';
+  roundRect(20, 100, 130, 50, 14);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  roundRect(20, 100, 130, 50, 14);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '700 9px "Noto Sans KR", sans-serif';
+  ctx.fillText('SCORE', 32, 118);
+  ctx.fillStyle = '#00d4ff';
+  ctx.font = '900 22px "Noto Sans KR", sans-serif';
+  ctx.fillText(STATE.score, 32, 140);
+  ctx.restore();
+}
+
+// 골대 (입체적, 닌텐도 풍)
+function drawGoalNet(cx, baseY, sh) {
+  const goalW = 340;
+  const goalH = 140;
+  const goalLeft = cx - goalW / 2;
+  const goalTop = baseY - goalH;
+  const depth = 50; // 골대 깊이감
+
+  const now = performance.now();
+  let netShake = 0;
+  if (sh.animPhase === 'goal') {
+    netShake = Math.sin((now - sh.animStart) * 0.03) * 10;
+  }
+
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // === 골대 깊이 (안쪽 어두운 배경) ===
+  // 사다리꼴 모양 (안쪽으로 좁아짐)
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+  ctx.beginPath();
+  ctx.moveTo(goalLeft + 12, goalTop + 12);
+  ctx.lineTo(goalLeft + goalW - 12, goalTop + 12);
+  ctx.lineTo(goalLeft + goalW - 8, baseY - 8);
+  ctx.lineTo(goalLeft + 8, baseY - 8);
+  ctx.closePath();
+  ctx.fill();
+
+  // === 그물 패턴 (다이아몬드/육각 그물) ===
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(goalLeft + 12, goalTop + 12);
+  ctx.lineTo(goalLeft + goalW - 12, goalTop + 12);
+  ctx.lineTo(goalLeft + goalW - 8, baseY - 8);
+  ctx.lineTo(goalLeft + 8, baseY - 8);
+  ctx.closePath();
+  ctx.clip();
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+  ctx.lineWidth = 1.2;
+  // 다이아몬드 그물 (X자 + V자 패턴)
+  const netSize = 14;
+  for (let row = 0; row < 12; row++) {
+    for (let col = -1; col < 25; col++) {
+      const offsetX = (row % 2) * (netSize / 2);
+      const x = goalLeft + col * netSize + offsetX + netShake * 0.5;
+      const y = goalTop + 12 + row * netSize;
+      if (y > baseY) break;
+      // 다이아몬드 그리기
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + netSize/2, y + netSize/2);
+      ctx.lineTo(x, y + netSize);
+      ctx.lineTo(x - netSize/2, y + netSize/2);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // === 골대 프레임 (빨강, 두꺼운 외곽선) ===
+  ctx.fillStyle = '#cc1f3a';
+  ctx.strokeStyle = '#7a0f1f';
+  ctx.lineWidth = 2.5;
+
+  // 왼쪽 기둥
+  roundRect(goalLeft - 8 + netShake, goalTop - 4, 14, goalH + 8, 4);
+  ctx.fill();
+  ctx.stroke();
+  // 오른쪽 기둥
+  roundRect(goalLeft + goalW - 6 + netShake, goalTop - 4, 14, goalH + 8, 4);
+  ctx.fill();
+  ctx.stroke();
+  // 상단 크로스바
+  roundRect(goalLeft - 8 + netShake, goalTop - 4, goalW + 14, 14, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  // 하이라이트 (광택)
+  ctx.fillStyle = 'rgba(255, 100, 130, 0.6)';
+  ctx.fillRect(goalLeft - 6 + netShake, goalTop - 2, 5, goalH);
+  ctx.fillRect(goalLeft + goalW - 4 + netShake, goalTop - 2, 5, goalH);
+  ctx.fillRect(goalLeft - 6 + netShake, goalTop - 2, goalW + 10, 5);
+
+  // 골대 바닥 페그 (얼음에 꽂힌 부분, 양 끝)
+  ctx.fillStyle = '#7a0f1f';
+  ctx.fillRect(goalLeft - 14 + netShake, baseY - 4, 22, 8);
+  ctx.fillRect(goalLeft + goalW - 8 + netShake, baseY - 4, 22, 8);
+
+  // 골인 시 골대 흔들기 후 빛
+  if (sh.animPhase === 'goal') {
+    ctx.shadowColor = '#ff3050';
+    ctx.shadowBlur = 24;
+    ctx.strokeStyle = '#ff3050';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(goalLeft - 10 + netShake, goalTop - 6, goalW + 18, goalH + 12);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.restore();
 }
 
 // 가로형 게이지 (슈팅 미션 전용)
@@ -2934,34 +3131,234 @@ function drawGaugeHorizontal(value, isJackpot) {
   }
 }
 
-function drawGoalie(x, y) {
-  // 몸통
-  ctx.fillStyle = '#2a4080';
-  ctx.fillRect(x - 30, y - 35, 60, 65);
-  // 머리
-  ctx.fillStyle = '#d4a574';
-  ctx.beginPath();
-  ctx.arc(x, y - 45, 18, 0, Math.PI*2);
+function drawGoalie(x, y, sh) {
+  const now = performance.now();
+  // 살짝 흔들기 (살아있음)
+  const sway = Math.sin(now * 0.008) * 1.5;
+
+  ctx.save();
+  ctx.translate(x + sway, y);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // === 다리 패드 (큰 흰색 패드, 양쪽) ===
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3.5;
+  // 왼쪽 패드
+  ctx.fillStyle = '#f5f5f5';
+  roundRect(-32, 10, 22, 56, 8);
   ctx.fill();
-  // 마스크
+  ctx.stroke();
+  // 패드 가로 줄무늬
+  ctx.strokeStyle = '#1e5fd4';
+  ctx.lineWidth = 2.5;
+  for (let i=0; i<3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-30, 20 + i*15);
+    ctx.lineTo(-12, 20 + i*15);
+    ctx.stroke();
+  }
+  // 오른쪽 패드
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3.5;
+  ctx.fillStyle = '#f5f5f5';
+  roundRect(10, 10, 22, 56, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = '#1e5fd4';
+  ctx.lineWidth = 2.5;
+  for (let i=0; i<3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(12, 20 + i*15);
+    ctx.lineTo(30, 20 + i*15);
+    ctx.stroke();
+  }
+
+  // === 몸통 (큰 푸른 유니폼 + 가슴 패드) ===
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3.5;
+  ctx.fillStyle = '#1e5fd4';
+  // 가슴 패드 모양 (어깨 넓게)
+  ctx.beginPath();
+  ctx.moveTo(-38, -10);
+  ctx.quadraticCurveTo(-42, 5, -38, 20);
+  ctx.lineTo(38, 20);
+  ctx.quadraticCurveTo(42, 5, 38, -10);
+  ctx.quadraticCurveTo(0, -18, -38, -10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // 가슴 'W' 마크
+  ctx.fillStyle = '#fff';
+  ctx.font = '900 18px "Noto Sans KR", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('W', 0, 8);
+
+  // === 어깨 패드 (둥근 양 어깨) ===
+  ctx.fillStyle = '#1e5fd4';
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.arc(-36, -8, 14, 0, Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(36, -8, 14, 0, Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+
+  // === 왼쪽 글러브 (캐쳐, 빨강) ===
+  // 글러브 미스 시 다이빙
+  let lGloveX = -52, lGloveY = -2;
+  let rGloveX = 52, rGloveY = -2;
+  if (sh && sh.animPhase === 'miss') {
+    const t = Math.min(1, (performance.now() - sh.animStart) / 1500);
+    if (sh.result.side === 'left') {
+      lGloveX -= 25 * Math.sin(t * Math.PI);
+      lGloveY -= 20 * Math.sin(t * Math.PI);
+    } else {
+      rGloveX += 25 * Math.sin(t * Math.PI);
+      rGloveY -= 20 * Math.sin(t * Math.PI);
+    }
+  }
+  ctx.fillStyle = '#cc1f3a';
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(lGloveX, lGloveY, 15, 0, Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+  // 글러브 안쪽 (밝은 빨강)
+  ctx.fillStyle = '#ff5577';
+  ctx.beginPath();
+  ctx.arc(lGloveX - 3, lGloveY - 3, 7, 0, Math.PI*2);
+  ctx.fill();
+
+  // === 오른쪽 블로커 (빨강 사각) ===
+  ctx.fillStyle = '#cc1f3a';
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3;
+  roundRect(rGloveX - 12, rGloveY - 14, 24, 28, 5);
+  ctx.fill();
+  ctx.stroke();
+  // 블로커 줄무늬
+  ctx.strokeStyle = '#7a0f1f';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(rGloveX - 8, rGloveY - 8);
+  ctx.lineTo(rGloveX + 8, rGloveY - 8);
+  ctx.moveTo(rGloveX - 8, rGloveY);
+  ctx.lineTo(rGloveX + 8, rGloveY);
+  ctx.moveTo(rGloveX - 8, rGloveY + 8);
+  ctx.lineTo(rGloveX + 8, rGloveY + 8);
+  ctx.stroke();
+
+  // === 골리 스틱 (블로커 아래로) ===
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(rGloveX, rGloveY + 14);
+  ctx.lineTo(rGloveX + 28, rGloveY + 50);
+  ctx.stroke();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(rGloveX, rGloveY + 14);
+  ctx.lineTo(rGloveX + 28, rGloveY + 50);
+  ctx.stroke();
+  // 골리 스틱 블레이드 (넓은 패들)
+  ctx.fillStyle = '#0a1228';
+  ctx.beginPath();
+  ctx.moveTo(rGloveX + 25, rGloveY + 44);
+  ctx.lineTo(rGloveX + 38, rGloveY + 38);
+  ctx.lineTo(rGloveX + 48, rGloveY + 60);
+  ctx.lineTo(rGloveX + 35, rGloveY + 64);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 2;
+  ctx.stroke();
   ctx.fillStyle = '#fff';
   ctx.beginPath();
-  ctx.arc(x, y - 42, 14, 0, Math.PI*2);
+  ctx.moveTo(rGloveX + 27, rGloveY + 46);
+  ctx.lineTo(rGloveX + 37, rGloveY + 40);
+  ctx.lineTo(rGloveX + 46, rGloveY + 58);
+  ctx.lineTo(rGloveX + 33, rGloveY + 62);
+  ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = '#000';
-  for (let i=0; i<3; i++) {
-    ctx.fillRect(x - 10 + i*7, y - 45, 2, 8);
-  }
-  // 글러브 (양쪽 팔)
-  ctx.fillStyle = '#dd2222';
+
+  // === 골리 마스크 (헬멧) ===
+  const maskY = -42;
+  // 마스크 본체
+  ctx.fillStyle = '#f5f5f5';
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3.5;
   ctx.beginPath();
-  ctx.arc(x - 38, y - 5, 14, 0, Math.PI*2);
-  ctx.arc(x + 38, y - 5, 14, 0, Math.PI*2);
+  ctx.arc(0, maskY, 22, 0, Math.PI*2);
   ctx.fill();
-  // 다리
-  ctx.fillStyle = '#2a4080';
-  ctx.fillRect(x - 24, y + 30, 18, 25);
-  ctx.fillRect(x + 6, y + 30, 18, 25);
+  ctx.stroke();
+  // 마스크 페인트 (파란색 디자인)
+  ctx.fillStyle = '#1e5fd4';
+  ctx.beginPath();
+  ctx.arc(0, maskY - 5, 22, Math.PI * 1.1, Math.PI * 1.9);
+  ctx.fill();
+  // 페이스 케이지 그릴
+  ctx.strokeStyle = '#1a1a1a';
+  ctx.lineWidth = 1.5;
+  // 가로 바
+  for (let i=0; i<4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-14, maskY - 4 + i*5);
+    ctx.lineTo(14, maskY - 4 + i*5);
+    ctx.stroke();
+  }
+  // 세로 바
+  ctx.beginPath();
+  ctx.moveTo(-5, maskY - 8);
+  ctx.lineTo(-5, maskY + 14);
+  ctx.moveTo(5, maskY - 8);
+  ctx.lineTo(5, maskY + 14);
+  ctx.stroke();
+
+  // 눈 (집중)
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(-6, maskY - 2, 2, 0, Math.PI*2);
+  ctx.arc(6, maskY - 2, 2, 0, Math.PI*2);
+  ctx.fill();
+  // 입 (꽉 다문 입)
+  ctx.strokeStyle = '#1a1a1a';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-3, maskY + 8);
+  ctx.lineTo(3, maskY + 8);
+  ctx.stroke();
+
+  // 마스크 상단 별 마크
+  ctx.fillStyle = '#ffd700';
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  drawStarPath(0, maskY - 14, 5, 4, 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.textAlign = 'start';
+  ctx.restore();
+}
+
+// 별 path 헬퍼
+function drawStarPath(cx, cy, points, outerR, innerR) {
+  let rot = -Math.PI / 2;
+  ctx.moveTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+  for (let i = 0; i < points; i++) {
+    rot += Math.PI / points;
+    ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+    rot += Math.PI / points;
+    ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+  }
+  ctx.closePath();
 }
 
 function drawGauge(value, locked=false) {
