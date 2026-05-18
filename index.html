@@ -5,88 +5,156 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>WEST HOCKEY MT 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
+  :root {
+    /* Color System - Frozen Stadium */
+    --c-bg-deep: #050816;
+    --c-bg-mid: #0a1024;
+    --c-bg-elev: #131c3a;
+    --c-ice: #e8f4ff;
+    --c-ice-line: #6a9fd4;
+    --c-primary: #4d9fff;
+    --c-primary-glow: #00d4ff;
+    --c-accent: #ff2d55;
+    --c-accent-glow: #ff5577;
+    --c-gold: #ffc940;
+    --c-gold-glow: #ffe066;
+    --c-success: #00e676;
+    --c-danger: #ff3355;
+    --c-text: #ffffff;
+    --c-text-dim: rgba(255,255,255,0.65);
+    --c-text-faint: rgba(255,255,255,0.4);
+    --c-glass: rgba(255,255,255,0.06);
+    --c-glass-border: rgba(255,255,255,0.12);
+
+    --shadow-glow: 0 0 40px rgba(77, 159, 255, 0.4);
+    --shadow-card: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.08);
+    --shadow-text: 0 2px 16px rgba(0,0,0,0.8);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
   html, body {
     width: 100%; height: 100%; overflow: hidden;
-    background: #0a0f1c;
-    font-family: 'Trebuchet MS', 'Helvetica Neue', sans-serif;
+    background: var(--c-bg-deep);
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    font-weight: 500;
     touch-action: none;
+    color: var(--c-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   #app {
     position: relative;
     width: 100vw; height: 100vh;
     max-width: 100vw; max-height: 100vh;
     overflow: hidden;
-    background: linear-gradient(180deg, #0a0f1c 0%, #1a2540 100%);
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(77, 159, 255, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(255, 45, 85, 0.08) 0%, transparent 50%),
+      linear-gradient(180deg, var(--c-bg-deep) 0%, var(--c-bg-mid) 50%, var(--c-bg-deep) 100%);
   }
   #game-canvas {
     display: block;
     width: 100%; height: 100%;
     background: transparent;
+    position: relative;
+    z-index: 1;
   }
 
   /* === 상단 HUD === */
   #hud {
     position: absolute; top: 0; left: 0; right: 0;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 24px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 20px 24px;
     z-index: 10;
     pointer-events: none;
-    font-weight: 900;
-    letter-spacing: 1px;
+  }
+  .hud-card {
+    background: rgba(5, 8, 22, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-glass-border);
+    border-radius: 16px;
+    padding: 10px 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .hud-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--c-text-faint);
+    text-transform: uppercase;
+    margin-bottom: 2px;
   }
   #score-display {
-    color: #fff;
-    font-size: 32px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(64,160,255,0.6);
-    transition: color 0.2s;
+    color: var(--c-primary-glow);
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    text-shadow: 0 0 24px rgba(0, 212, 255, 0.6);
+    transition: color 0.2s, text-shadow 0.2s;
+    line-height: 1;
   }
-  #score-display.negative { color: #ff3355; text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(255,50,80,0.8); }
+  #score-display.negative {
+    color: var(--c-danger);
+    text-shadow: 0 0 24px rgba(255, 51, 85, 0.8);
+  }
   #timer-display {
-    color: #ffcc00;
-    font-size: 28px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(255,200,0,0.5);
+    color: var(--c-gold);
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    text-shadow: 0 0 20px rgba(255, 201, 64, 0.5);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
   #combo-display {
-    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-    font-size: 48px; font-weight: 900;
-    color: #ffd700;
-    text-shadow: 0 4px 12px rgba(0,0,0,0.9), 0 0 24px rgba(255,215,0,0.8);
+    position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+    font-size: 56px; font-weight: 900;
+    color: var(--c-gold-glow);
+    text-shadow: 0 4px 24px rgba(0,0,0,0.9), 0 0 32px rgba(255, 201, 64, 0.9);
     opacity: 0;
     pointer-events: none;
     z-index: 10;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
+    font-style: italic;
   }
-  #combo-display.show { animation: comboFlash 1s ease-out; }
+  #combo-display.show { animation: comboFlash 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes comboFlash {
-    0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
-    30% { opacity: 1; transform: translateX(-50%) scale(1.2); }
-    100% { opacity: 0; transform: translateX(-50%) scale(1); }
+    0% { opacity: 0; transform: translateX(-50%) scale(0.3) rotate(-5deg); }
+    30% { opacity: 1; transform: translateX(-50%) scale(1.3) rotate(2deg); }
+    60% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0); }
+    100% { opacity: 0; transform: translateX(-50%) scale(0.9) rotate(0); }
   }
 
   /* === 화면 흔들기 === */
   #app.shake { animation: shake 0.2s; }
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-12px); }
-    40% { transform: translateX(10px); }
-    60% { transform: translateX(-8px); }
+    20% { transform: translateX(-14px) rotate(-0.5deg); }
+    40% { transform: translateX(12px) rotate(0.5deg); }
+    60% { transform: translateX(-8px) rotate(-0.3deg); }
     80% { transform: translateX(6px); }
   }
 
   /* === 피버 오버레이 === */
   #fever-overlay {
     position: absolute; inset: 0;
-    background: radial-gradient(circle, transparent 30%, rgba(255,30,60,0.4) 100%);
+    background:
+      radial-gradient(circle at 30% 50%, rgba(255, 45, 85, 0.45) 0%, transparent 50%),
+      radial-gradient(circle at 70% 50%, rgba(255, 100, 30, 0.4) 0%, transparent 50%);
     opacity: 0;
     pointer-events: none;
     z-index: 5;
+    mix-blend-mode: screen;
   }
   #fever-overlay.active { animation: feverStrobe 0.3s infinite alternate; }
   @keyframes feverStrobe {
-    0% { opacity: 0.2; }
-    100% { opacity: 0.8; }
+    0% { opacity: 0.3; }
+    100% { opacity: 0.9; }
   }
 
   /* === 시작/결과 화면 === */
@@ -95,145 +163,301 @@
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     z-index: 100;
-    background: linear-gradient(180deg, #0a0f1c 0%, #1a2540 50%, #0a0f1c 100%);
-    padding: 40px;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(77, 159, 255, 0.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(255, 45, 85, 0.12) 0%, transparent 60%),
+      linear-gradient(180deg, var(--c-bg-deep) 0%, var(--c-bg-mid) 100%);
+    padding: 40px 24px;
   }
   .screen.hidden { display: none; }
+  /* 빙판 노이즈 텍스처 */
+  .screen::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px),
+      repeating-linear-gradient(-45deg, transparent 0, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
+    pointer-events: none;
+  }
+  /* 글로우 라인 데코 */
+  .screen::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: -50%; right: -50%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--c-primary-glow), transparent);
+    opacity: 0.3;
+    pointer-events: none;
+  }
 
-  .title {
-    font-size: 56px;
-    font-weight: 900;
-    color: #fff;
+  /* === 시작 화면 컴포넌트 === */
+  .brand-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border: 1px solid var(--c-primary);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
     letter-spacing: 4px;
-    text-shadow: 0 0 30px rgba(64,160,255,0.8), 0 0 60px rgba(64,160,255,0.4);
-    margin-bottom: 8px;
+    color: var(--c-primary-glow);
+    margin-bottom: 24px;
+    background: rgba(77, 159, 255, 0.08);
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    z-index: 1;
+    position: relative;
+  }
+
+  .title-wrap {
+    position: relative;
+    z-index: 1;
     text-align: center;
+    margin-bottom: 8px;
+  }
+  .title {
+    font-size: 68px;
+    font-weight: 900;
+    color: var(--c-text);
+    letter-spacing: -2px;
+    line-height: 0.95;
+    text-shadow:
+      0 0 32px rgba(77, 159, 255, 0.5),
+      0 0 64px rgba(77, 159, 255, 0.25);
+    margin: 0;
+  }
+  .title-accent {
+    color: var(--c-primary-glow);
+    font-style: italic;
+  }
+  .title-year {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--c-text-dim);
+    letter-spacing: 12px;
+    margin-top: 8px;
+    padding-left: 12px;
   }
   .subtitle {
-    font-size: 22px;
-    color: #88a8ff;
-    letter-spacing: 6px;
-    margin-bottom: 40px;
-    font-weight: 700;
+    font-size: 13px;
+    color: var(--c-text-faint);
+    letter-spacing: 8px;
+    margin-bottom: 36px;
+    font-weight: 500;
+    text-transform: uppercase;
+    z-index: 1;
+    position: relative;
   }
 
   .ranking-box {
-    background: rgba(255,255,255,0.05);
-    border: 2px solid rgba(64,160,255,0.4);
-    border-radius: 16px;
-    padding: 24px 32px;
-    min-width: 360px;
-    margin-bottom: 40px;
-    backdrop-filter: blur(10px);
+    background: var(--c-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-glass-border);
+    border-radius: 20px;
+    padding: 24px 28px 20px;
+    min-width: 340px;
+    max-width: 90vw;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow-card);
+    z-index: 1;
+    position: relative;
   }
   .ranking-title {
-    color: #ffd700;
-    font-size: 20px;
-    font-weight: 900;
-    text-align: center;
+    display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 16px;
-    letter-spacing: 3px;
   }
-  .ranking-row {
-    display: flex; justify-content: space-between;
-    color: #fff; font-size: 18px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    font-weight: 700;
-  }
-  .ranking-row:last-child { border-bottom: none; }
-  .ranking-row .rank { color: #ffcc00; width: 40px; }
-  .ranking-row .name { flex: 1; text-align: left; padding-left: 12px; }
-  .ranking-row .score { color: #64d8ff; }
-  .ranking-empty { color: rgba(255,255,255,0.5); text-align: center; font-size: 16px; padding: 16px 0; }
-
-  .btn-primary {
-    background: linear-gradient(135deg, #ff3355 0%, #ff8833 100%);
-    color: #fff;
-    border: none;
-    padding: 20px 60px;
-    font-size: 26px;
+  .ranking-title-text {
+    color: var(--c-gold);
+    font-size: 13px;
     font-weight: 900;
     letter-spacing: 4px;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(255,50,80,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
-    transition: transform 0.1s;
-    font-family: inherit;
+    text-transform: uppercase;
   }
-  .btn-primary:active { transform: scale(0.96); }
+  .ranking-title-icon {
+    color: var(--c-gold);
+    font-size: 18px;
+  }
+  .ranking-row {
+    display: flex; align-items: center;
+    color: var(--c-text); font-size: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-weight: 500;
+  }
+  .ranking-row:last-child { border-bottom: none; }
+  .ranking-row .rank {
+    color: var(--c-text-faint);
+    width: 32px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .ranking-row:nth-child(1) .rank { color: var(--c-gold); }
+  .ranking-row .name {
+    flex: 1; padding-left: 8px;
+    font-weight: 700;
+  }
+  .ranking-row .score {
+    color: var(--c-primary-glow);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+  }
+  .ranking-empty { color: var(--c-text-faint); text-align: center; font-size: 14px; padding: 20px 0; letter-spacing: 1px; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--c-accent) 0%, #ff6b35 100%);
+    color: var(--c-text);
+    border: none;
+    padding: 20px 56px;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow:
+      0 12px 32px rgba(255, 45, 85, 0.4),
+      inset 0 1px 0 rgba(255,255,255,0.35),
+      inset 0 -2px 0 rgba(0,0,0,0.15);
+    transition: transform 0.1s, box-shadow 0.2s;
+    font-family: inherit;
+    z-index: 1;
+    position: relative;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .btn-primary:active {
+    transform: scale(0.96) translateY(2px);
+    box-shadow: 0 6px 16px rgba(255, 45, 85, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
 
   .guide-text {
     margin-top: 32px;
-    color: rgba(255,255,255,0.6);
-    font-size: 14px;
-    line-height: 1.8;
+    color: var(--c-text-dim);
+    font-size: 13px;
+    line-height: 2;
     text-align: center;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    z-index: 1;
+    position: relative;
+    max-width: 320px;
+  }
+  .guide-text b {
+    color: var(--c-primary-glow);
+    font-weight: 700;
   }
 
   /* === 결과 화면 === */
-  .result-score {
-    font-size: 80px;
-    font-weight: 900;
-    color: #ffd700;
-    text-shadow: 0 0 40px rgba(255,215,0,0.8);
-    margin: 20px 0;
-    letter-spacing: 4px;
+  .result-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    color: var(--c-text-faint);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    z-index: 1;
+    position: relative;
   }
-  .result-score.negative { color: #ff3355; text-shadow: 0 0 40px rgba(255,50,80,0.8); }
+  .result-score {
+    font-size: 96px;
+    font-weight: 900;
+    color: var(--c-gold);
+    text-shadow:
+      0 0 40px rgba(255, 201, 64, 0.7),
+      0 0 80px rgba(255, 201, 64, 0.3);
+    margin: 8px 0 28px;
+    letter-spacing: -3px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    z-index: 1;
+    position: relative;
+  }
+  .result-score.negative {
+    color: var(--c-danger);
+    text-shadow: 0 0 40px rgba(255, 51, 85, 0.7);
+  }
   .result-breakdown {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 12px;
-    padding: 20px 32px;
-    margin-bottom: 24px;
+    background: var(--c-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-glass-border);
+    border-radius: 16px;
+    padding: 20px 28px;
+    margin-bottom: 28px;
     min-width: 320px;
+    max-width: 90vw;
+    z-index: 1;
+    position: relative;
+    box-shadow: var(--shadow-card);
   }
   .result-row {
-    display: flex; justify-content: space-between;
-    color: #fff; font-size: 16px;
-    padding: 6px 0;
-    font-weight: 700;
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--c-text); font-size: 14px;
+    padding: 8px 0;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
-  .result-row .label { color: #88a8ff; }
+  .result-row .label {
+    color: var(--c-text-dim);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .result-row .value {
+    font-weight: 700;
+    color: var(--c-text);
+  }
 
   .name-input {
     margin-bottom: 20px;
     text-align: center;
+    z-index: 1;
+    position: relative;
   }
   .name-input input {
-    background: rgba(255,255,255,0.1);
-    border: 2px solid rgba(64,160,255,0.6);
-    color: #fff;
-    padding: 14px 20px;
+    background: var(--c-glass);
+    backdrop-filter: blur(20px);
+    border: 1.5px solid var(--c-primary);
+    color: var(--c-text);
+    padding: 16px 24px;
     font-size: 22px;
-    font-weight: 900;
+    font-weight: 700;
     text-align: center;
     border-radius: 12px;
-    width: 200px;
+    width: 220px;
     letter-spacing: 4px;
     font-family: inherit;
     outline: none;
+    box-shadow: 0 0 24px rgba(77, 159, 255, 0.2);
   }
-  .name-input input::placeholder { color: rgba(255,255,255,0.4); letter-spacing: 2px; }
+  .name-input input::placeholder {
+    color: var(--c-text-faint);
+    letter-spacing: 2px;
+    font-weight: 500;
+  }
+  .name-input input:focus {
+    border-color: var(--c-primary-glow);
+    box-shadow: 0 0 32px rgba(0, 212, 255, 0.4);
+  }
 
   .result-buttons {
-    display: flex; gap: 16px;
+    display: flex; gap: 12px;
+    z-index: 1;
+    position: relative;
   }
   .btn-secondary {
-    background: rgba(255,255,255,0.1);
-    border: 2px solid rgba(255,255,255,0.4);
-    color: #fff;
-    padding: 14px 32px;
-    font-size: 18px;
-    font-weight: 900;
+    background: var(--c-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--c-glass-border);
+    color: var(--c-text);
+    padding: 14px 28px;
+    font-size: 14px;
+    font-weight: 700;
     letter-spacing: 2px;
-    border-radius: 50px;
+    border-radius: 999px;
     cursor: pointer;
     font-family: inherit;
+    text-transform: uppercase;
   }
-  .btn-secondary:active { transform: scale(0.96); }
+  .btn-secondary:active { transform: scale(0.96); background: rgba(255,255,255,0.12); }
 
   /* === 카운트다운 === */
   #countdown {
@@ -243,18 +467,22 @@
     pointer-events: none;
   }
   #countdown-num {
-    font-size: 200px;
+    font-size: 240px;
     font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 40px rgba(64,160,255,0.8);
+    color: var(--c-text);
+    text-shadow:
+      0 0 60px var(--c-primary-glow),
+      0 0 120px rgba(0, 212, 255, 0.5);
     opacity: 0;
     pointer-events: none;
+    font-style: italic;
+    letter-spacing: -8px;
   }
-  #countdown-num.show { animation: countdownPulse 1s ease-out; }
+  #countdown-num.show { animation: countdownPulse 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes countdownPulse {
-    0% { opacity: 0; transform: scale(2); }
-    30% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0.8); }
+    0% { opacity: 0; transform: scale(2.5) rotate(-10deg); }
+    30% { opacity: 1; transform: scale(1) rotate(0); }
+    100% { opacity: 0; transform: scale(0.7); }
   }
 
   /* === 슈팅 미션 UI === */
@@ -268,28 +496,55 @@
   #shooting-hint {
     position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff; font-size: 32px; font-weight: 900;
-    text-shadow: 0 0 20px rgba(0,0,0,0.9);
+    color: var(--c-text); font-size: 32px; font-weight: 900;
+    text-shadow: 0 0 24px rgba(0,0,0,0.9);
     letter-spacing: 4px;
     text-align: center;
     pointer-events: none;
   }
 
   #toast {
-    position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
-    color: #fff; font-size: 40px; font-weight: 900;
-    text-shadow: 0 4px 16px rgba(0,0,0,0.9);
+    position: absolute; top: 32%; left: 50%; transform: translateX(-50%);
+    color: var(--c-text);
+    font-size: 44px;
+    font-weight: 900;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.9);
     opacity: 0;
     pointer-events: none;
     z-index: 20;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
+    text-align: center;
+    white-space: nowrap;
   }
-  #toast.show { animation: toastPop 1.2s ease-out; }
+  #toast.show { animation: toastPop 1.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes toastPop {
-    0% { opacity: 0; transform: translate(-50%, 20px); }
-    20% { opacity: 1; transform: translate(-50%, 0); }
-    80% { opacity: 1; transform: translate(-50%, 0); }
-    100% { opacity: 0; transform: translate(-50%, -20px); }
+    0% { opacity: 0; transform: translate(-50%, 30px) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+    35% { transform: translate(-50%, 0) scale(1); }
+    80% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -20px) scale(0.95); }
+  }
+
+  /* 배경 데코 - 일렉트릭 라인 */
+  .deco-line {
+    position: absolute;
+    background: linear-gradient(90deg, transparent, var(--c-primary), transparent);
+    height: 1px;
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* 시작화면 풋터 */
+  .footer-mark {
+    position: absolute;
+    bottom: 24px;
+    left: 50%; transform: translateX(-50%);
+    color: var(--c-text-faint);
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    z-index: 1;
   }
 </style>
 </head>
@@ -299,8 +554,14 @@
 
   <!-- 상단 HUD -->
   <div id="hud" style="display:none;">
-    <div id="score-display">0</div>
-    <div id="timer-display">30.0</div>
+    <div class="hud-card">
+      <div class="hud-label">Score</div>
+      <div id="score-display">0</div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-label">Time</div>
+      <div id="timer-display">30.0</div>
+    </div>
   </div>
   <div id="combo-display">COMBO ×2</div>
   <div id="toast"></div>
@@ -320,35 +581,46 @@
 
   <!-- 시작 화면 -->
   <div class="screen" id="start-screen">
-    <div class="title">WEST HOCKEY</div>
-    <div class="title" style="font-size:40px; margin-bottom:0;">MT 2026</div>
-    <div class="subtitle">링크 훈련 게임</div>
+    <div class="brand-badge">MT 2026 · OFFICIAL ARCADE</div>
+
+    <div class="title-wrap">
+      <h1 class="title">WEST <span class="title-accent">HOCKEY</span></h1>
+      <div class="title-year">2 0 2 6</div>
+    </div>
+
+    <div class="subtitle">Ice Training Challenge</div>
 
     <div class="ranking-box">
-      <div class="ranking-title">🏆 TOP 5 🏆</div>
+      <div class="ranking-title">
+        <span class="ranking-title-text">Leaderboard</span>
+        <span class="ranking-title-icon">🏆</span>
+      </div>
       <div id="ranking-list"></div>
     </div>
 
-    <button class="btn-primary" id="start-btn">게임 시작</button>
+    <button class="btn-primary" id="start-btn">START</button>
 
     <div class="guide-text">
-      🟠 콘 → 좌/우 스와이프로 라인 회피<br>
-      😡 감독 → 위 스와이프로 점프 통과<br>
-      🟢 음료캔 → 같은 라인에서 습득 (점프 중 X)
+      <b>← →</b> 스와이프로 라인 이동 · <b>↑</b> 스와이프로 점프<br>
+      🟠 콘 = 라인 회피 · 😡 감독 = 점프 통과<br>
+      🟢 음료캔 = 같은 라인에서 습득 (+30pt)
     </div>
+
+    <div class="footer-mark">FROZEN STADIUM · 2026</div>
   </div>
 
   <!-- 결과 화면 -->
   <div class="screen hidden" id="result-screen">
-    <div class="subtitle">FINAL SCORE</div>
+    <div class="brand-badge">MISSION COMPLETE</div>
+    <div class="result-label">Final Score</div>
     <div class="result-score" id="result-score">0</div>
     <div class="result-breakdown" id="result-breakdown"></div>
     <div class="name-input">
-      <input type="text" id="name-input" maxlength="5" placeholder="이름 5자">
+      <input type="text" id="name-input" maxlength="5" placeholder="NAME">
     </div>
     <div class="result-buttons">
-      <button class="btn-secondary" id="save-btn">기록 저장</button>
-      <button class="btn-secondary" id="retry-btn">다시 도전</button>
+      <button class="btn-secondary" id="save-btn">Save</button>
+      <button class="btn-secondary" id="retry-btn">Retry</button>
     </div>
   </div>
 </div>
@@ -405,8 +677,8 @@ const CFG = {
   SPAWN_INTERVAL: 750,
   FALL_SPEED_START: 340,
   FALL_SPEED_END: 480,
-  BG_SCROLL_START: 280,
-  BG_SCROLL_END: 400,
+  BG_SCROLL_START: 420,
+  BG_SCROLL_END: 600,
 
   // 슈팅 미션
   SHOOT_PERIOD_MS: 700, // 1왕복 더 빠르게 (1.2→0.7초)
@@ -416,7 +688,7 @@ const CFG = {
   SHOOT_GAUGE_MIN: 51, // 51 이상이어야 슛 발사
 
   // 골리 움직임
-  GOALIE_PERIOD_MS: 1500, // 1왕복
+  GOALIE_PERIOD_MS: 750, // 1왕복 (1.5초→0.75초, 2배 빠름)
   GOALIE_RANGE_RATIO: 0.7, // 골대 폭의 70% 안에서 왕복
   GOALIE_CENTER_TOLERANCE: 0.2, // 중앙 ±20%는 50% 확률
 
@@ -800,7 +1072,7 @@ function update(dt, now) {
   if (STATE.phase === 'training') {
     const t = STATE.elapsed / CFG.TRAINING_END;
     const bgSpeed = CFG.BG_SCROLL_START + (CFG.BG_SCROLL_END - CFG.BG_SCROLL_START) * t;
-    STATE.bgScrollY = (STATE.bgScrollY + bgSpeed * dt) % 80;
+    STATE.bgScrollY = (STATE.bgScrollY + bgSpeed * dt);
   }
 
   // 오브젝트 스폰
@@ -923,18 +1195,25 @@ function spawnObstacle(lane, type) {
 
 function handleCollision(obs) {
   if (obs.type === 'energy') {
-    // 음료캔 - 같은 라인 통과 = 습득
+    // 음료캔 - 같은 라인 통과 = 습득 (화려한 이펙트)
     STATE.score += CFG.SCORE_ENERGY;
     STATE.stats.energy++;
     obs.collided = true;
-    obs.y = H + 100; // 즉시 제거
+    obs.y = H + 100;
     SFX.energy();
-    spawnParticles(STATE.player.x, STATE.player.y, '#00ff88', 12);
+    // 다층 파티클 (초록 + 흰색 + 노랑)
+    spawnParticles(STATE.player.x, STATE.player.y, '#00ff88', 24);
+    spawnParticles(STATE.player.x, STATE.player.y, '#ffffff', 12);
+    spawnParticles(STATE.player.x, STATE.player.y, '#ffcc00', 8);
+    // 화면 글로우 플래시
+    STATE.energyFlash = 1.0;
+    // 토스트
+    showToast('⚡ +' + CFG.SCORE_ENERGY + ' BOOST!', '#00ff88');
     updateScoreDisplay();
     return;
   }
 
-  if (obs.type === 'boss' && obs.avoided) return; // 회피 완료된 감독 통과
+  if (obs.type === 'boss' && obs.avoided) return;
 
   // 충돌!
   obs.collided = true;
@@ -942,7 +1221,7 @@ function handleCollision(obs) {
   STATE.combo = 0;
   STATE.stats.hits++;
   STATE.player.invincibleUntil = performance.now() + CFG.INVINCIBLE_MS;
-  obs.y = H + 100; // 제거
+  obs.y = H + 100;
   SFX.hit();
   shakeScreen();
   spawnParticles(STATE.player.x, STATE.player.y, '#ff3355', 16);
@@ -1190,22 +1469,85 @@ function render() {
     return;
   }
 
-  // === 빙판 배경 ===
-  ctx.fillStyle = CFG.COL_BG_ICE;
+  // === 빙판 배경 (실사 텍스처) ===
+  // 기본 빙판 그라데이션
+  const iceGrad = ctx.createLinearGradient(0, 0, 0, H);
+  iceGrad.addColorStop(0, '#f5fafe');
+  iceGrad.addColorStop(0.5, '#e3f0ff');
+  iceGrad.addColorStop(1, '#cde0f5');
+  ctx.fillStyle = iceGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // 빙판 스크롤 라인
-  ctx.strokeStyle = CFG.COL_BG_ICE_LINE;
-  ctx.lineWidth = 2;
-  for (let y = -80 + STATE.bgScrollY; y < H; y += 80) {
+  // 라인 마킹 (스크롤되는 청록 라인 - 빙판 노이즈)
+  const scrollOffset = STATE.bgScrollY;
+  ctx.strokeStyle = 'rgba(120, 160, 200, 0.18)';
+  ctx.lineWidth = 1;
+  for (let y = -40 + (scrollOffset % 40); y < H; y += 40) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(W, y);
     ctx.stroke();
   }
-  // 세로 가이드 라인
-  ctx.strokeStyle = 'rgba(100, 130, 180, 0.15)';
-  ctx.lineWidth = 1;
+
+  // 얼음 갈린 자국 (사선 스크래치, 빙판 표면 흠집)
+  ctx.strokeStyle = 'rgba(140, 180, 220, 0.22)';
+  ctx.lineWidth = 0.8;
+  // 미리 계산된 시드 기반 스크래치 (게임 중 일관)
+  if (!STATE.iceScratches) {
+    STATE.iceScratches = [];
+    for (let i = 0; i < 50; i++) {
+      STATE.iceScratches.push({
+        x: Math.random(),
+        baseY: Math.random() * 200,
+        len: 30 + Math.random() * 80,
+        angle: (Math.random() - 0.5) * 0.5,
+        alpha: 0.1 + Math.random() * 0.2,
+      });
+    }
+  }
+  for (const sc of STATE.iceScratches) {
+    const x = sc.x * W;
+    const y = ((sc.baseY + scrollOffset * 0.4) % (H + 100)) - 50;
+    ctx.strokeStyle = `rgba(120, 160, 210, ${sc.alpha})`;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(sc.angle) * sc.len, y + Math.sin(sc.angle) * sc.len);
+    ctx.stroke();
+  }
+
+  // 작은 얼음 반사점들 (반짝임)
+  if (!STATE.iceSparkles) {
+    STATE.iceSparkles = [];
+    for (let i = 0; i < 40; i++) {
+      STATE.iceSparkles.push({
+        x: Math.random(),
+        baseY: Math.random() * 300,
+        size: 0.8 + Math.random() * 1.5,
+        twinkle: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+  const _now = performance.now();
+  for (const sp of STATE.iceSparkles) {
+    const x = sp.x * W;
+    const y = ((sp.baseY + scrollOffset * 0.6) % (H + 100)) - 50;
+    const tw = (Math.sin(_now * 0.003 + sp.twinkle) + 1) / 2;
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + tw * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(x, y, sp.size, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // 빙판 가장자리 부드러운 비네팅
+  const vGrad = ctx.createRadialGradient(W/2, H/2, H*0.3, W/2, H/2, H*0.8);
+  vGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  vGrad.addColorStop(1, 'rgba(20, 40, 80, 0.25)');
+  ctx.fillStyle = vGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 세로 가이드 라인 (라인 구분)
+  ctx.strokeStyle = 'rgba(80, 120, 180, 0.18)';
+  ctx.lineWidth = 1.5;
   for (let i=1; i<3; i++) {
     ctx.beginPath();
     ctx.moveTo(laneWidth * i, 0);
@@ -1213,9 +1555,21 @@ function render() {
     ctx.stroke();
   }
 
+  // 라인 글로우 라인 (양쪽)
+  ctx.strokeStyle = 'rgba(77, 159, 255, 0.4)';
+  ctx.lineWidth = 0.5;
+  for (let i=1; i<3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(laneWidth * i - 4, 0);
+    ctx.lineTo(laneWidth * i - 4, H);
+    ctx.moveTo(laneWidth * i + 4, 0);
+    ctx.lineTo(laneWidth * i + 4, H);
+    ctx.stroke();
+  }
+
   // 피버 시 빙판 붉은 톤 오버레이
   if (STATE.phase === 'fever') {
-    ctx.fillStyle = 'rgba(255, 50, 80, 0.15)';
+    ctx.fillStyle = 'rgba(255, 60, 100, 0.18)';
     ctx.fillRect(0, 0, W, H);
   }
 
@@ -1390,6 +1744,20 @@ function render() {
 
   // === 파티클 ===
   renderParticles();
+
+  // === 음료캔 습득 플래시 === 
+  if (STATE.energyFlash && STATE.energyFlash > 0) {
+    STATE.energyFlash *= 0.9; // 페이드아웃
+    ctx.save();
+    const flashGrad = ctx.createRadialGradient(STATE.player.x, STATE.player.y, 0, STATE.player.x, STATE.player.y, 400);
+    flashGrad.addColorStop(0, `rgba(0, 255, 136, ${STATE.energyFlash * 0.5})`);
+    flashGrad.addColorStop(0.5, `rgba(0, 255, 136, ${STATE.energyFlash * 0.2})`);
+    flashGrad.addColorStop(1, 'rgba(0, 255, 136, 0)');
+    ctx.fillStyle = flashGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    if (STATE.energyFlash < 0.05) STATE.energyFlash = 0;
+  }
 }
 
 function drawPlayer() {
@@ -1491,29 +1859,64 @@ function drawObstacle(obs, x) {
 
 function drawCone(x, y) {
   // 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
   ctx.ellipse(x + 3, y + 28, 28, 6, 0, 0, Math.PI*2);
   ctx.fill();
-  // 콘 본체 (삼각형)
-  ctx.fillStyle = CFG.COL_CONE;
+
+  // 콘 본체 그라데이션
+  const coneGrad = ctx.createLinearGradient(x - 28, y, x + 28, y);
+  coneGrad.addColorStop(0, '#c24500');
+  coneGrad.addColorStop(0.5, '#ff7a1f');
+  coneGrad.addColorStop(1, '#c24500');
+
+  ctx.fillStyle = coneGrad;
   ctx.beginPath();
-  ctx.moveTo(x, y - 30);
+  ctx.moveTo(x, y - 32);
   ctx.lineTo(x - 28, y + 25);
   ctx.lineTo(x + 28, y + 25);
   ctx.closePath();
   ctx.fill();
-  // 흰 띠
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(x - 22, y - 5, 44, 8);
-  // 베이스
-  ctx.fillStyle = '#cc5500';
-  ctx.fillRect(x - 30, y + 22, 60, 6);
-  // 외곽선
-  ctx.strokeStyle = '#aa3500';
-  ctx.lineWidth = 2;
+
+  // 광택 하이라이트
+  ctx.fillStyle = 'rgba(255, 220, 180, 0.5)';
   ctx.beginPath();
-  ctx.moveTo(x, y - 30);
+  ctx.moveTo(x - 5, y - 28);
+  ctx.lineTo(x - 12, y + 20);
+  ctx.lineTo(x - 8, y + 20);
+  ctx.lineTo(x - 1, y - 28);
+  ctx.closePath();
+  ctx.fill();
+
+  // 흰 반사 띠
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x - 23, y - 5, 46, 9);
+  // 띠 상단 그림자
+  ctx.fillStyle = 'rgba(180, 80, 0, 0.4)';
+  ctx.fillRect(x - 23, y + 3, 46, 2);
+
+  // 베이스
+  const baseGrad = ctx.createLinearGradient(x - 30, 0, x + 30, 0);
+  baseGrad.addColorStop(0, '#7a2a00');
+  baseGrad.addColorStop(0.5, '#a83800');
+  baseGrad.addColorStop(1, '#7a2a00');
+  ctx.fillStyle = baseGrad;
+  roundRect(x - 32, y + 22, 64, 8, 2);
+  ctx.fill();
+
+  // 콘 끝 (작은 깜빡임)
+  const now = performance.now();
+  const tipGlow = (Math.sin(now * 0.005 + x) + 1) / 2;
+  ctx.fillStyle = `rgba(255, 220, 100, ${0.4 + tipGlow * 0.4})`;
+  ctx.beginPath();
+  ctx.arc(x, y - 30, 3, 0, Math.PI*2);
+  ctx.fill();
+
+  // 외곽선
+  ctx.strokeStyle = 'rgba(120, 40, 0, 0.8)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x, y - 32);
   ctx.lineTo(x - 28, y + 25);
   ctx.lineTo(x + 28, y + 25);
   ctx.closePath();
@@ -1680,41 +2083,99 @@ function roundRect(x, y, w, h, r) {
 }
 
 function drawEnergy(x, y) {
-  // 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  const now = performance.now();
+  // 부유 애니메이션
+  const float = Math.sin(now * 0.004) * 4;
+  const yPos = y + float;
+  // 회전
+  const rotation = Math.sin(now * 0.003) * 0.15;
+
+  ctx.save();
+  ctx.translate(x, yPos);
+  ctx.rotate(rotation);
+
+  // === 그림자 ===
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath();
-  ctx.ellipse(x + 3, y + 28, 18, 5, 0, 0, Math.PI*2);
+  ctx.ellipse(3, 32, 22, 6, 0, 0, Math.PI*2);
   ctx.fill();
-  // 캔 본체
-  const grad = ctx.createLinearGradient(x - 18, y, x + 18, y);
-  grad.addColorStop(0, '#0a3010');
-  grad.addColorStop(0.5, '#1a8030');
-  grad.addColorStop(1, '#0a3010');
-  ctx.fillStyle = grad;
-  ctx.fillRect(x - 16, y - 28, 32, 56);
-  // 상단/하단 캡
-  ctx.fillStyle = '#888';
-  ctx.fillRect(x - 16, y - 28, 32, 5);
-  ctx.fillRect(x - 16, y + 23, 32, 5);
-  // M 마크
-  ctx.fillStyle = CFG.COL_ENERGY;
-  ctx.font = 'bold 22px sans-serif';
+
+  // === 글로우 오라 (배경) ===
+  const glowR = 38 + Math.sin(now * 0.005) * 4;
+  const glowGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, glowR);
+  glowGrad.addColorStop(0, 'rgba(0, 255, 136, 0.6)');
+  glowGrad.addColorStop(0.5, 'rgba(0, 255, 136, 0.25)');
+  glowGrad.addColorStop(1, 'rgba(0, 255, 136, 0)');
+  ctx.fillStyle = glowGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, glowR, 0, Math.PI*2);
+  ctx.fill();
+
+  // === 캔 본체 (메탈릭 그라데이션) ===
+  const bodyGrad = ctx.createLinearGradient(-18, 0, 18, 0);
+  bodyGrad.addColorStop(0, '#022a14');
+  bodyGrad.addColorStop(0.15, '#0a4a20');
+  bodyGrad.addColorStop(0.5, '#1a8030');
+  bodyGrad.addColorStop(0.85, '#0a4a20');
+  bodyGrad.addColorStop(1, '#022a14');
+  ctx.fillStyle = bodyGrad;
+  roundRect(-18, -30, 36, 60, 4);
+  ctx.fill();
+
+  // 메탈릭 광택 (밝은 하이라이트)
+  const shineGrad = ctx.createLinearGradient(-18, 0, 18, 0);
+  shineGrad.addColorStop(0, 'rgba(255,255,255,0)');
+  shineGrad.addColorStop(0.3, 'rgba(255,255,255,0.15)');
+  shineGrad.addColorStop(0.5, 'rgba(255,255,255,0.4)');
+  shineGrad.addColorStop(0.7, 'rgba(255,255,255,0.15)');
+  shineGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = shineGrad;
+  roundRect(-18, -30, 36, 60, 4);
+  ctx.fill();
+
+  // 상하단 메탈 캡
+  ctx.fillStyle = '#aaaaaa';
+  roundRect(-18, -30, 36, 5, 2);
+  ctx.fill();
+  roundRect(-18, 25, 36, 5, 2);
+  ctx.fill();
+  // 캡 디테일
+  ctx.fillStyle = '#666';
+  ctx.fillRect(-18, -25, 36, 1);
+  ctx.fillRect(-18, 25, 36, 1);
+
+  // === M 마크 (큰 글자, 발광) ===
+  ctx.save();
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = '#00ff88';
+  ctx.font = 'bold 26px "Noto Sans KR", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('M', x, y);
-  ctx.textAlign = 'start';
-  ctx.textBaseline = 'alphabetic';
-  // 빛나는 효과
-  ctx.strokeStyle = 'rgba(0, 255, 100, 0.6)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x - 17, y - 29, 34, 58);
-  // 글로우
-  ctx.save();
-  ctx.shadowColor = '#00ff80';
-  ctx.shadowBlur = 12;
-  ctx.strokeStyle = 'rgba(0,255,128,0.4)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x - 17, y - 29, 34, 58);
+  ctx.fillText('M', 0, 0);
+  ctx.restore();
+
+  // 외곽선 글로우
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 16;
+  ctx.strokeStyle = 'rgba(0, 255, 136, 0.8)';
+  ctx.lineWidth = 1.5;
+  roundRect(-18, -30, 36, 60, 4);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // 작은 별 스파클 (주변)
+  for (let i=0; i<3; i++) {
+    const angle = (now * 0.002 + i * Math.PI * 2 / 3);
+    const sx = Math.cos(angle) * 26;
+    const sy = Math.sin(angle) * 26;
+    const sparkleAlpha = (Math.sin(now * 0.008 + i) + 1) / 2;
+    ctx.fillStyle = `rgba(255, 255, 255, ${sparkleAlpha * 0.8})`;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
   ctx.restore();
 }
 
