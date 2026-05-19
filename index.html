@@ -646,21 +646,30 @@ const CFG = {
   DRAG_ANGLE_DEG: 30,
 
   // 게임 타이밍
-  TOTAL_TIME: 22500, // 22.5초
-  TRAINING_END: 14500, // 0~14.5초
-  DRIBBLE_END: 19500, // 14.5~19.5초 (5초)
-  FEVER_END: 22500, // 19.5~22.5초 (3초)
+  TOTAL_TIME: 33000, // 33초
+  TRAINING_END: 25000, // 0~25초
+  DRIBBLE_END: 30000, // 25~30초 (5초)
+  FEVER_END: 33000, // 30~33초 (3초)
 
   // 점수 (v2)
   SCORE_CONE: 20,
   SCORE_CONE_COMBO: 50,
   SCORE_BOSS: 50,
   SCORE_BOSS_COMBO: 120,
-  SCORE_ENERGY: 30,
+  SCORE_ENERGY: 50,
+  SCORE_SKATE: 100, // 스케이트화 습득 즉시 보너스
+  SCORE_SMASH: 80, // 스케이트화 발동 중 장애물 1개당 보너스
   PENALTY_HIT: -30,
   SCORE_TAP_NORMAL: 30,
   SCORE_TAP_FEVER: 50,
   SCORE_SHOOT_MULT: 5,
+
+  // 스케이트화 (부스트) 효과
+  SKATE_DURATION_MS: 3000, // 3초
+  SKATE_SPEED_MULT: 1.7, // 낙하/스크롤 1.7배
+
+  // 슈팅 라운드
+  SHOOT_ROUNDS: 3, // 슈팅 3번
 
   // 콤보
   COMBO_THRESHOLD: 5,
@@ -703,40 +712,78 @@ const CFG = {
 };
 
 // ============================================================
+// 이미지 에셋 로더 (PNG 자동 대체 시스템)
+// ============================================================
+// assets/ 폴더의 파일이 존재하면 일러스트 대신 자동 사용
+// 파일이 없거나 로드 실패 시 일러스트 fallback
+const ASSETS = {
+  cone:   { path: 'assets/cone.png',   img: null, loaded: false, w: 60, h: 70 },
+  player: { path: 'assets/player.png', img: null, loaded: false, w: 80, h: 90 },
+  energy: { path: 'assets/energy.png', img: null, loaded: false, w: 50, h: 70 },
+  skate:  { path: 'assets/skate.png',  img: null, loaded: false, w: 60, h: 60 },
+  goalie: { path: 'assets/goalie.png', img: null, loaded: false, w: 120, h: 160 },
+  goal:   { path: 'assets/goal.png',   img: null, loaded: false, w: 340, h: 140 },
+  boss:   { path: 'assets/boss.png',   img: null, loaded: false, w: 100, h: 100 },
+};
+
+function loadAssets() {
+  for (const key of Object.keys(ASSETS)) {
+    const a = ASSETS[key];
+    const img = new Image();
+    img.onload = () => { a.loaded = true; a.img = img; };
+    img.onerror = () => { a.loaded = false; }; // 실패 시 일러스트 fallback
+    img.src = a.path;
+  }
+}
+
+// 이미지 그리기 헬퍼 (loaded면 이미지, 아니면 fallback 함수 호출)
+function drawAssetOrFallback(key, x, y, w, h, fallbackFn) {
+  const a = ASSETS[key];
+  if (a && a.loaded && a.img) {
+    ctx.drawImage(a.img, x - w/2, y - h/2, w, h);
+  } else {
+    fallbackFn();
+  }
+}
+
+// 페이지 로드 시 자동 호출
+loadAssets();
+
+// ============================================================
 // 4종 패턴 데이터 (시간:구간:오브젝트)
 // ============================================================
 const PATTERNS = {
   A: [ // 좌익 폭격
-    [0.00,1,'cone'],[0.55,2,'cone'],[1.10,1,'cone'],[1.65,1,'boss'],[2.30,2,'cone'],
-    [2.85,3,'cone'],[2.85,1,'cone'],[3.40,1,'cone'],[3.95,1,'energy'],[4.20,1,'cone'],
-    [4.75,2,'boss'],[5.40,3,'cone'],[5.95,1,'boss'],[6.60,2,'cone'],[6.60,3,'cone'],
-    [7.15,1,'cone'],[7.70,2,'boss'],[8.35,1,'cone'],[8.90,3,'boss'],[9.55,1,'cone'],
-    [10.20,2,'cone'],[10.75,3,'cone'],[11.30,1,'cone'],[11.85,2,'energy'],[12.10,2,'cone'],
-    [12.65,1,'boss'],[13.30,2,'boss'],[13.95,3,'boss']
+    [0.00,1,'cone'],[0.70,2,'cone'],[1.40,1,'cone'],[2.10,1,'boss'],[2.90,2,'cone'],
+    [3.60,3,'cone'],[3.60,1,'cone'],[4.30,1,'cone'],[5.00,1,'energy'],[5.25,1,'cone'],
+    [6.00,2,'boss'],[6.80,3,'cone'],[7.60,1,'cone'],[8.40,2,'cone'],[8.40,3,'cone'],
+    [9.20,1,'boss'],[10.00,2,'cone'],[10.80,3,'skate'],[11.60,1,'cone'],[12.40,2,'boss'],
+    [13.20,3,'cone'],[14.00,1,'cone'],[14.80,2,'energy'],[15.05,2,'cone'],[15.80,3,'boss'],
+    [16.80,1,'cone'],[17.80,2,'boss'],[18.80,3,'boss']
   ],
   B: [ // 지그재그 댄스
-    [0.00,1,'cone'],[0.55,3,'cone'],[1.10,1,'cone'],[1.65,3,'boss'],[2.30,1,'cone'],
-    [2.85,3,'cone'],[3.40,2,'cone'],[3.95,2,'energy'],[4.20,2,'cone'],[4.75,1,'boss'],
-    [5.40,3,'cone'],[5.95,1,'cone'],[5.95,3,'cone'],[6.60,2,'boss'],[7.15,1,'cone'],
-    [7.70,3,'cone'],[8.35,2,'cone'],[8.90,1,'boss'],[9.55,3,'cone'],[10.20,2,'energy'],
-    [10.45,2,'cone'],[11.00,1,'cone'],[11.00,3,'cone'],[11.55,2,'boss'],[12.20,1,'boss'],
-    [12.75,3,'boss'],[13.30,2,'cone'],[13.85,1,'boss']
+    [0.00,1,'cone'],[0.70,3,'cone'],[1.40,1,'cone'],[2.10,3,'boss'],[2.90,1,'cone'],
+    [3.60,3,'cone'],[4.30,2,'cone'],[5.00,2,'energy'],[5.25,2,'cone'],[6.00,1,'boss'],
+    [6.80,3,'cone'],[7.60,1,'cone'],[7.60,3,'cone'],[8.40,2,'boss'],[9.20,1,'cone'],
+    [10.00,3,'skate'],[10.80,2,'cone'],[11.60,1,'boss'],[12.40,3,'cone'],[13.20,2,'energy'],
+    [13.45,2,'cone'],[14.20,1,'cone'],[14.20,3,'cone'],[15.00,2,'boss'],[15.80,1,'cone'],
+    [16.80,3,'boss'],[17.80,2,'cone'],[18.80,1,'boss']
   ],
   C: [ // 감독 러시
-    [0.00,2,'cone'],[0.55,1,'boss'],[1.20,3,'cone'],[1.75,2,'cone'],[2.30,3,'boss'],
-    [2.95,2,'cone'],[2.95,1,'cone'],[3.50,3,'cone'],[4.05,2,'energy'],[4.30,2,'cone'],
-    [4.85,1,'boss'],[5.50,2,'cone'],[6.05,3,'cone'],[6.05,1,'cone'],[6.60,2,'boss'],
-    [7.25,3,'cone'],[7.80,1,'cone'],[8.35,3,'boss'],[9.00,2,'cone'],[9.55,1,'cone'],
-    [10.10,3,'cone'],[10.65,2,'energy'],[10.90,2,'cone'],[11.45,1,'boss'],[12.10,3,'boss'],
-    [12.75,2,'cone'],[13.30,1,'cone'],[13.85,2,'boss']
+    [0.00,2,'cone'],[0.70,1,'boss'],[1.50,3,'cone'],[2.20,2,'cone'],[2.90,3,'boss'],
+    [3.70,2,'cone'],[3.70,1,'cone'],[4.40,3,'cone'],[5.10,2,'energy'],[5.35,2,'cone'],
+    [6.10,1,'boss'],[6.90,2,'cone'],[7.60,3,'cone'],[7.60,1,'cone'],[8.40,2,'cone'],
+    [9.20,3,'skate'],[10.00,1,'boss'],[10.80,3,'cone'],[11.60,2,'cone'],[12.40,1,'cone'],
+    [13.20,3,'cone'],[14.00,2,'energy'],[14.25,2,'cone'],[15.00,1,'boss'],[16.00,3,'boss'],
+    [17.00,2,'cone'],[17.90,1,'cone'],[18.80,2,'boss']
   ],
   D: [ // 센터 폭주
-    [0.00,2,'cone'],[0.55,2,'cone'],[1.10,1,'cone'],[1.65,2,'boss'],[2.30,3,'cone'],
-    [2.85,2,'cone'],[2.85,3,'cone'],[3.40,1,'boss'],[4.05,2,'cone'],[4.60,3,'energy'],
-    [4.85,3,'cone'],[5.40,2,'boss'],[6.05,1,'cone'],[6.05,3,'cone'],[6.60,2,'cone'],
-    [7.15,3,'boss'],[7.80,2,'cone'],[8.35,1,'cone'],[8.90,2,'boss'],[9.55,3,'cone'],
-    [10.10,2,'cone'],[10.65,1,'energy'],[10.90,1,'cone'],[11.45,3,'boss'],[12.10,2,'boss'],
-    [12.75,1,'cone'],[13.30,3,'cone'],[13.85,2,'boss']
+    [0.00,2,'cone'],[0.70,2,'cone'],[1.40,1,'cone'],[2.10,2,'boss'],[2.90,3,'cone'],
+    [3.60,2,'cone'],[3.60,3,'cone'],[4.30,1,'boss'],[5.10,2,'cone'],[5.80,3,'energy'],
+    [6.05,3,'cone'],[6.80,2,'boss'],[7.60,1,'cone'],[7.60,3,'cone'],[8.40,2,'cone'],
+    [9.20,3,'skate'],[10.00,2,'cone'],[10.80,1,'cone'],[11.60,2,'boss'],[12.40,3,'cone'],
+    [13.20,2,'cone'],[14.00,1,'energy'],[14.25,1,'cone'],[15.00,3,'boss'],[16.00,2,'cone'],
+    [17.00,1,'cone'],[17.90,3,'boss'],[18.80,2,'boss']
   ]
 };
 
@@ -832,16 +879,21 @@ const STATE = {
 
   score: 0,
   combo: 0,
-  stats: { coneNormal:0, coneCombo:0, bossNormal:0, bossCombo:0, energy:0, hits:0, normalTaps:0, feverTaps:0, shootScore:0 },
+  stats: { coneNormal:0, coneCombo:0, bossNormal:0, bossCombo:0, energy:0, skate:0, smash:0, hits:0, normalTaps:0, feverTaps:0, shootScore:0 },
 
   patternKey: 'A',
   patternQueue: [], // 남은 스폰
 
   // 슈팅 미션
   shoot: { active:false, value:0, dir:1, startTime:0, holdStart:0, locked:false, result:null, ready:false, animStart:0, side:'left', goalieT:0 },
+  shootRound: 1,
+  shootRoundScores: [],
 
   // 드리블 애니메이션
   dribble: { dir: 1, hitTime: 0, puckX: 0 },
+
+  // 스케이트화 부스트 상태
+  skate: { activeUntil: 0, smashCount: 0 },
 
   obstacleIdCounter: 0,
 };
@@ -1007,7 +1059,8 @@ function startGame() {
   STATE.bgScrollY = 0;
   STATE.score = 0;
   STATE.combo = 0;
-  STATE.stats = { coneNormal:0, coneCombo:0, bossNormal:0, bossCombo:0, energy:0, hits:0, normalTaps:0, feverTaps:0, shootScore:0 };
+  STATE.stats = { coneNormal:0, coneCombo:0, bossNormal:0, bossCombo:0, energy:0, skate:0, smash:0, hits:0, normalTaps:0, feverTaps:0, shootScore:0 };
+  STATE.skate = { activeUntil: 0, smashCount: 0 };
 
   // 패턴 추첨
   const keys = ['A', 'B', 'C', 'D'];
@@ -1084,7 +1137,10 @@ function update(dt, now) {
 
   // 오브젝트 업데이트
   const tProgress = Math.min(1, STATE.elapsed / CFG.TRAINING_END);
-  const fallSpeed = CFG.FALL_SPEED_START + (CFG.FALL_SPEED_END - CFG.FALL_SPEED_START) * tProgress;
+  let fallSpeed = CFG.FALL_SPEED_START + (CFG.FALL_SPEED_END - CFG.FALL_SPEED_START) * tProgress;
+  // 스케이트 부스트 시 낙하 가속
+  const isSkating = now < STATE.skate.activeUntil;
+  if (isSkating) fallSpeed *= CFG.SKATE_SPEED_MULT;
 
   for (let i = STATE.obstacles.length - 1; i >= 0; i--) {
     const obs = STATE.obstacles[i];
@@ -1128,7 +1184,21 @@ function update(dt, now) {
     if (now > STATE.player.invincibleUntil && !obs.collided) {
       // 이미 통과(passed) 또는 회피(avoided)된 오브젝트는 충돌 면제
       if (obs.passed || obs.avoided) continue;
-      // 감독은 lane 무시 (가로 장벽), 콘/캔은 같은 lane만 체크
+
+      const isSkateActive = now < STATE.skate.activeUntil;
+
+      // 스케이트 발동 중: 라인 무관 + 확장 박스로 모든 장애물 파괴
+      if (isSkateActive && (obs.type === 'cone' || obs.type === 'boss')) {
+        const dist = Math.abs(obs.y - STATE.player.y);
+        // 콘은 라인 일치만, 감독은 라인 무관 (원래 가로 장벽)
+        const inRange = (obs.type === 'boss') || (Math.abs(obs.lane - STATE.player.lane) <= 1);
+        if (inRange && dist < 90) {
+          handleCollision(obs);
+          continue;
+        }
+      }
+
+      // 감독은 lane 무시 (가로 장벽), 콘/캔/스케이트는 같은 lane만 체크
       const laneMatch = (obs.type === 'boss') || (obs.lane === STATE.player.lane);
       if (laneMatch) {
         const dist = Math.abs(obs.y - STATE.player.y);
@@ -1150,8 +1220,8 @@ function update(dt, now) {
             updateScoreDisplay();
             continue;
           }
-          // 점프 중 캔: 미습득 (지면 한정)
-          if (isJumping && obs.type === 'energy') {
+          // 점프 중 캔/스케이트: 미습득
+          if (isJumping && (obs.type === 'energy' || obs.type === 'skate')) {
             continue;
           }
           handleCollision(obs);
@@ -1193,33 +1263,77 @@ function spawnObstacle(lane, type) {
 }
 
 function handleCollision(obs) {
+  const now = performance.now();
+  const isSkating = now < STATE.skate.activeUntil;
+
+  // === 스케이트화 자체 습득 ===
+  if (obs.type === 'skate') {
+    STATE.score += CFG.SCORE_SKATE;
+    STATE.stats.skate++;
+    obs.collided = true;
+    obs.y = H + 100;
+    // 부스트 발동
+    STATE.skate.activeUntil = now + CFG.SKATE_DURATION_MS;
+    SFX.energy();
+    // 황금색 + 흰색 파티클 폭발
+    spawnParticles(STATE.player.x, STATE.player.y, '#ffd700', 30);
+    spawnParticles(STATE.player.x, STATE.player.y, '#ffffff', 18);
+    spawnParticles(STATE.player.x, STATE.player.y, '#00d4ff', 12);
+    STATE.energyFlash = 1.5;
+    STATE.skateFlash = 1.0;
+    showToast('SUPER SPEED! +' + CFG.SCORE_SKATE, '#ffd700');
+    updateScoreDisplay();
+    return;
+  }
+
+  // === 음료캔 습득 (화려한 이펙트 강화) ===
   if (obs.type === 'energy') {
-    // 음료캔 - 같은 라인 통과 = 습득 (화려한 이펙트)
     STATE.score += CFG.SCORE_ENERGY;
     STATE.stats.energy++;
     obs.collided = true;
     obs.y = H + 100;
     SFX.energy();
-    // 다층 파티클 (초록 + 흰색 + 노랑)
-    spawnParticles(STATE.player.x, STATE.player.y, '#00ff88', 24);
-    spawnParticles(STATE.player.x, STATE.player.y, '#ffffff', 12);
-    spawnParticles(STATE.player.x, STATE.player.y, '#ffcc00', 8);
-    // 화면 글로우 플래시
-    STATE.energyFlash = 1.0;
-    // 토스트
-    showToast('⚡ +' + CFG.SCORE_ENERGY + ' BOOST!', '#00ff88');
+    // 다층 파티클 폭발 (3배 더 화려)
+    spawnParticles(STATE.player.x, STATE.player.y, '#00ff88', 40);
+    spawnParticles(STATE.player.x, STATE.player.y, '#ffffff', 20);
+    spawnParticles(STATE.player.x, STATE.player.y, '#ffcc00', 14);
+    STATE.energyFlash = 1.5; // 더 강한 플래시
+    // 다층 토스트
+    showToast('⚡ ENERGY +' + CFG.SCORE_ENERGY, '#00ff88');
+    // 화면 펄스 효과 (테두리 글로우)
+    STATE.energyRingPulse = 1.0;
     updateScoreDisplay();
     return;
   }
 
   if (obs.type === 'boss' && obs.avoided) return;
 
-  // 충돌!
+  // === 스케이트 발동 중 장애물 충돌 = 파괴 ===
+  if (isSkating && (obs.type === 'cone' || obs.type === 'boss')) {
+    obs.collided = true;
+    STATE.score += CFG.SCORE_SMASH;
+    STATE.stats.smash++;
+    STATE.skate.smashCount++;
+    obs.y = H + 100;
+    SFX.hit();
+    // 파괴 파티클 (콘은 주황, 감독은 갈색)
+    const color = obs.type === 'cone' ? '#ff7a1f' : '#d4a574';
+    spawnParticles(STATE.player.x, STATE.player.y, color, 20);
+    spawnParticles(STATE.player.x, STATE.player.y, '#ffd700', 10);
+    // 스매시 카운트마다 점수 토스트
+    if (STATE.skate.smashCount % 3 === 0) {
+      showToast('SMASH! +' + (CFG.SCORE_SMASH * 3), '#ffd700');
+    }
+    updateScoreDisplay();
+    return;
+  }
+
+  // === 일반 충돌 ===
   obs.collided = true;
   STATE.score += CFG.PENALTY_HIT;
   STATE.combo = 0;
   STATE.stats.hits++;
-  STATE.player.invincibleUntil = performance.now() + CFG.INVINCIBLE_MS;
+  STATE.player.invincibleUntil = now + CFG.INVINCIBLE_MS;
   obs.y = H + 100;
   SFX.hit();
   shakeScreen();
@@ -1298,6 +1412,12 @@ function enterShooting() {
   document.getElementById('hud').style.display = 'none';
   document.getElementById('shooting-ui').classList.add('active');
 
+  STATE.shootRound = 1;
+  STATE.shootRoundScores = []; // 각 라운드 점수 기록
+  initShootRound();
+}
+
+function initShootRound() {
   STATE.shoot = {
     active: true,
     value: 0,
@@ -1311,11 +1431,9 @@ function enterShooting() {
     countdownStart: performance.now(),
     animStart: 0,
     animPhase: null,
-    side: 'left', // 초기 영역
-    goalieT: 0, // 골리 위치 정규화 시간 (0~1)
+    side: 'left',
+    goalieT: Math.random(), // 라운드마다 골리 시작 위치 랜덤
   };
-
-  // 카운트다운 시작
   showCountdown(3);
 }
 
@@ -1392,7 +1510,18 @@ function updateShooting(dt, now) {
       const t = (now - sh.animStart) / (sh.animPhase === 'goal' ? 2000 : 1500);
       if (t >= 1) {
         sh.animPhase = 'done';
-        setTimeout(() => endGame(), 500);
+        // 현재 라운드 점수 기록
+        STATE.shootRoundScores.push(sh.result.bonus);
+        STATE.stats.shootScore = STATE.shootRoundScores.reduce((a,b) => a+b, 0);
+
+        if (STATE.shootRound < CFG.SHOOT_ROUNDS) {
+          // 다음 라운드
+          STATE.shootRound++;
+          setTimeout(() => initShootRound(), 700);
+        } else {
+          // 최종 종료
+          setTimeout(() => endGame(), 600);
+        }
       }
     }
   }
@@ -1787,22 +1916,79 @@ function render() {
 
   // === 음료캔 습득 플래시 === 
   if (STATE.energyFlash && STATE.energyFlash > 0) {
-    STATE.energyFlash *= 0.9; // 페이드아웃
+    STATE.energyFlash *= 0.92;
     ctx.save();
-    const flashGrad = ctx.createRadialGradient(STATE.player.x, STATE.player.y, 0, STATE.player.x, STATE.player.y, 400);
-    flashGrad.addColorStop(0, `rgba(0, 255, 136, ${STATE.energyFlash * 0.5})`);
-    flashGrad.addColorStop(0.5, `rgba(0, 255, 136, ${STATE.energyFlash * 0.2})`);
+    const flashGrad = ctx.createRadialGradient(STATE.player.x, STATE.player.y, 0, STATE.player.x, STATE.player.y, 500);
+    flashGrad.addColorStop(0, `rgba(0, 255, 136, ${STATE.energyFlash * 0.6})`);
+    flashGrad.addColorStop(0.5, `rgba(0, 255, 136, ${STATE.energyFlash * 0.25})`);
     flashGrad.addColorStop(1, 'rgba(0, 255, 136, 0)');
     ctx.fillStyle = flashGrad;
     ctx.fillRect(0, 0, W, H);
     ctx.restore();
     if (STATE.energyFlash < 0.05) STATE.energyFlash = 0;
   }
+
+  // === 음료캔 화면 테두리 펄스 ===
+  if (STATE.energyRingPulse && STATE.energyRingPulse > 0) {
+    STATE.energyRingPulse *= 0.93;
+    ctx.save();
+    ctx.lineWidth = 12 * STATE.energyRingPulse;
+    ctx.strokeStyle = `rgba(0, 255, 136, ${STATE.energyRingPulse * 0.8})`;
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 30;
+    ctx.strokeRect(6, 6, W - 12, H - 12);
+    ctx.restore();
+    if (STATE.energyRingPulse < 0.05) STATE.energyRingPulse = 0;
+  }
+
+  // === 스케이트 발동 중 화면 황금 오버레이 ===
+  const now2 = performance.now();
+  if (now2 < STATE.skate.activeUntil) {
+    const remaining = (STATE.skate.activeUntil - now2) / CFG.SKATE_DURATION_MS;
+    // 가장자리 황금 펄스
+    ctx.save();
+    const edgeGrad = ctx.createRadialGradient(W/2, H/2, H*0.3, W/2, H/2, H*0.9);
+    edgeGrad.addColorStop(0, 'rgba(255, 215, 0, 0)');
+    edgeGrad.addColorStop(0.7, `rgba(255, 100, 30, ${remaining * 0.25})`);
+    edgeGrad.addColorStop(1, `rgba(255, 215, 0, ${remaining * 0.4})`);
+    ctx.fillStyle = edgeGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 화면 가장자리 빛 테두리
+    const pulse = (Math.sin(now2 * 0.02) + 1) / 2;
+    ctx.lineWidth = 8 + pulse * 4;
+    ctx.strokeStyle = `rgba(255, 215, 0, ${remaining * 0.9})`;
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 30;
+    ctx.strokeRect(8, 8, W - 16, H - 16);
+
+    // 카운트다운 상단 표시
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = `rgba(255, 215, 0, ${remaining})`;
+    ctx.font = '900 28px "Noto Sans KR", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ SUPER MODE ⚡', W/2, H - 30);
+    ctx.font = '900 14px "Noto Sans KR", sans-serif';
+    ctx.fillText(((STATE.skate.activeUntil - now2) / 1000).toFixed(1) + 's', W/2, H - 12);
+    ctx.textAlign = 'start';
+    ctx.restore();
+  }
+
+  // === 스케이트 습득 임팩트 (한 순간 강한 플래시) ===
+  if (STATE.skateFlash && STATE.skateFlash > 0) {
+    STATE.skateFlash *= 0.88;
+    ctx.save();
+    ctx.fillStyle = `rgba(255, 215, 0, ${STATE.skateFlash * 0.4})`;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    if (STATE.skateFlash < 0.05) STATE.skateFlash = 0;
+  }
 }
 
 function drawPlayer() {
   const p = STATE.player;
   const now = performance.now();
+  const isSkating = now < STATE.skate.activeUntil;
   let yOffset = 0;
   let scale = 1;
   // 점프 포물선
@@ -1822,6 +2008,36 @@ function drawPlayer() {
     ctx.beginPath();
     ctx.ellipse(p.x, p.y + 44, 38 * shadowScale, 9 * shadowScale, 0, 0, Math.PI*2);
     ctx.fill();
+  }
+
+  // === 스케이트 부스트 오라 (캐릭터 배경) ===
+  if (isSkating) {
+    const remaining = (STATE.skate.activeUntil - now) / CFG.SKATE_DURATION_MS;
+    const auraR = 70 + Math.sin(now * 0.015) * 8;
+    const auraGrad = ctx.createRadialGradient(x, y, 10, x, y, auraR);
+    auraGrad.addColorStop(0, `rgba(255, 215, 0, ${0.6 * remaining})`);
+    auraGrad.addColorStop(0.5, `rgba(255, 100, 30, ${0.3 * remaining})`);
+    auraGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+    ctx.fillStyle = auraGrad;
+    ctx.beginPath();
+    ctx.arc(x, y, auraR, 0, Math.PI*2);
+    ctx.fill();
+
+    // 스피드 라인 (뒤로 길게)
+    ctx.strokeStyle = `rgba(255, 220, 100, ${remaining * 0.6})`;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (let i=0; i<5; i++) {
+      const lineY = y - 50 + i * 20 + (now * 0.5) % 20;
+      ctx.beginPath();
+      ctx.moveTo(x - 50, lineY);
+      ctx.lineTo(x - 20, lineY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + 20, lineY);
+      ctx.lineTo(x + 50, lineY);
+      ctx.stroke();
+    }
   }
 
   ctx.save();
@@ -2031,6 +2247,8 @@ function drawObstacle(obs, x) {
     drawBoss(x, obs.y, obs.avoided);
   } else if (obs.type === 'energy') {
     drawEnergy(x, obs.y);
+  } else if (obs.type === 'skate') {
+    drawSkate(x, obs.y);
   }
 }
 
@@ -2536,6 +2754,140 @@ function drawRinkLine(y, line) {
   }
 }
 
+function drawSkate(x, y) {
+  const now = performance.now();
+  const float = Math.sin(now * 0.005) * 5;
+  const yPos = y + float;
+  const rotation = Math.sin(now * 0.004) * 0.18;
+
+  ctx.save();
+  ctx.translate(x, yPos);
+  ctx.rotate(rotation);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // 그림자
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(3, 32, 28, 7, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // === 강한 황금 글로우 오라 ===
+  const glowR = 50 + Math.sin(now * 0.006) * 8;
+  const glowGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, glowR);
+  glowGrad.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+  glowGrad.addColorStop(0.4, 'rgba(255, 215, 0, 0.4)');
+  glowGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+  ctx.fillStyle = glowGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, glowR, 0, Math.PI*2);
+  ctx.fill();
+
+  // === 스케이트화 부츠 ===
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 3;
+  // 부츠 본체 (검정 + 흰색 디테일)
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath();
+  ctx.moveTo(-22, -12);
+  ctx.quadraticCurveTo(-26, -16, -22, -22);
+  ctx.lineTo(-10, -22);
+  ctx.quadraticCurveTo(-4, -28, 8, -26);
+  ctx.lineTo(20, -16);
+  ctx.quadraticCurveTo(24, -10, 22, -2);
+  ctx.lineTo(22, 8);
+  ctx.quadraticCurveTo(20, 14, 14, 14);
+  ctx.lineTo(-18, 14);
+  ctx.quadraticCurveTo(-22, 10, -22, 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // 부츠 위 흰 디테일 (라이닝)
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(-18, -18);
+  ctx.lineTo(8, -22);
+  ctx.lineTo(16, -14);
+  ctx.lineTo(-16, -10);
+  ctx.closePath();
+  ctx.fill();
+
+  // 끈 (지그재그)
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(-10, -4);
+  ctx.lineTo(0, -8);
+  ctx.lineTo(-8, -12);
+  ctx.lineTo(6, -16);
+  ctx.lineTo(-2, -20);
+  ctx.stroke();
+  // 끈 구멍
+  ctx.fillStyle = '#666';
+  for (let i=0; i<5; i++) {
+    ctx.beginPath();
+    ctx.arc(-10 + i*4, -6 - i*3, 1.2, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // === 스케이트 날 (황금색, 빛남) ===
+  // 날 본체
+  ctx.fillStyle = '#ffd700';
+  ctx.strokeStyle = '#0a1228';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-26, 14);
+  ctx.lineTo(26, 14);
+  ctx.lineTo(28, 22);
+  ctx.lineTo(24, 28);
+  ctx.lineTo(-24, 28);
+  ctx.lineTo(-28, 22);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // 날 하이라이트
+  ctx.fillStyle = '#ffe066';
+  ctx.fillRect(-22, 17, 44, 3);
+
+  // 날 글로우 (강한 빛 효과)
+  ctx.save();
+  ctx.shadowColor = '#ffd700';
+  ctx.shadowBlur = 20;
+  ctx.strokeStyle = 'rgba(255, 220, 50, 0.9)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-26, 14);
+  ctx.lineTo(26, 14);
+  ctx.stroke();
+  ctx.restore();
+
+  // === 별 스파클 (주변 회전) ===
+  for (let i=0; i<4; i++) {
+    const angle = (now * 0.003 + i * Math.PI / 2);
+    const sx = Math.cos(angle) * 36;
+    const sy = Math.sin(angle) * 22;
+    const sparkleAlpha = (Math.sin(now * 0.01 + i) + 1) / 2;
+    ctx.fillStyle = `rgba(255, 255, 255, ${sparkleAlpha})`;
+    ctx.strokeStyle = `rgba(255, 215, 0, ${sparkleAlpha})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    drawStarPath(sx, sy, 4, 3.5, 1.5);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // "SUPER" 작은 라벨
+  ctx.fillStyle = '#ffd700';
+  ctx.font = '900 9px "Noto Sans KR", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('SUPER', 0, -30);
+  ctx.textAlign = 'start';
+
+  ctx.restore();
+}
+
 function drawEnergy(x, y) {
   const now = performance.now();
   // 부유 애니메이션
@@ -2932,6 +3284,58 @@ function renderShooting() {
   ctx.fillStyle = '#00d4ff';
   ctx.font = '900 22px "Noto Sans KR", sans-serif';
   ctx.fillText(STATE.score, 32, 140);
+  ctx.restore();
+
+  // === 우측 상단 라운드 인디케이터 ===
+  ctx.save();
+  const indY = 125;
+  const indSpacing = 28;
+  const indStartX = W - 20 - (CFG.SHOOT_ROUNDS - 1) * indSpacing - 10;
+  // 라벨
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '700 9px "Noto Sans KR", sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('ROUND ' + STATE.shootRound + '/' + CFG.SHOOT_ROUNDS, W - 20, indY - 18);
+  // 원 3개
+  for (let i = 0; i < CFG.SHOOT_ROUNDS; i++) {
+    const cx = indStartX + i * indSpacing;
+    const cy = indY;
+    const isPast = i < STATE.shootRound - 1; // 완료된 라운드
+    const isCurrent = i === STATE.shootRound - 1; // 현재 진행
+    let color;
+    if (isPast || isCurrent) {
+      color = '#00d4ff'; // 파랑
+    } else {
+      color = 'rgba(255,255,255,0.18)'; // 회색
+    }
+    // 글로우 (현재 라운드만)
+    if (isCurrent) {
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 12;
+    } else {
+      ctx.shadowBlur = 0;
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 11, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    // 외곽선
+    ctx.strokeStyle = isPast || isCurrent ? '#0080cc' : 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 11, 0, Math.PI*2);
+    ctx.stroke();
+
+    // 완료된 라운드 점수 표시
+    if (isPast && STATE.shootRoundScores[i] !== undefined) {
+      ctx.fillStyle = STATE.shootRoundScores[i] > 0 ? '#ffd700' : 'rgba(255,255,255,0.5)';
+      ctx.font = '900 9px "Noto Sans KR", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(STATE.shootRoundScores[i] > 0 ? '+' + STATE.shootRoundScores[i] : '0', cx, cy + 24);
+    }
+  }
+  ctx.textAlign = 'start';
   ctx.restore();
 }
 
