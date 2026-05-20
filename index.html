@@ -717,13 +717,13 @@ const CFG = {
 // assets/ 폴더의 파일이 존재하면 일러스트 대신 자동 사용
 // 파일이 없거나 로드 실패 시 일러스트 fallback
 const ASSETS = {
-  cone:   { path: 'assets/cone.png',   img: null, loaded: false, w: 60, h: 70 },
-  player: { path: 'assets/player.png', img: null, loaded: false, w: 80, h: 90 },
-  energy: { path: 'assets/energy.png', img: null, loaded: false, w: 50, h: 70 },
-  skate:  { path: 'assets/skate.png',  img: null, loaded: false, w: 60, h: 60 },
-  goalie: { path: 'assets/goalie.png', img: null, loaded: false, w: 120, h: 160 },
-  goal:   { path: 'assets/goal.png',   img: null, loaded: false, w: 340, h: 140 },
-  boss:   { path: 'assets/boss.png',   img: null, loaded: false, w: 100, h: 100 },
+  cone:   { path: 'assets/cone.png',   img: null, loaded: false, w: 100, h: 110 },
+  player: { path: 'assets/player.png', img: null, loaded: false, w: 130, h: 140 },
+  energy: { path: 'assets/energy.png', img: null, loaded: false, w: 90, h: 130 },
+  skate:  { path: 'assets/skate.png',  img: null, loaded: false, w: 120, h: 100 },
+  goalie: { path: 'assets/goalie.png', img: null, loaded: false, w: 180, h: 240 },
+  goal:   { path: 'assets/goal.png',   img: null, loaded: false, w: 420, h: 200 },
+  boss:   { path: 'assets/boss.png',   img: null, loaded: false, w: 600, h: 220 },
 };
 
 function loadAssets() {
@@ -731,18 +731,22 @@ function loadAssets() {
     const a = ASSETS[key];
     const img = new Image();
     img.onload = () => { a.loaded = true; a.img = img; };
-    img.onerror = () => { a.loaded = false; }; // 실패 시 일러스트 fallback
+    img.onerror = () => { a.loaded = false; };
     img.src = a.path;
   }
 }
 
 // 이미지 그리기 헬퍼 (loaded면 이미지, 아니면 fallback 함수 호출)
-function drawAssetOrFallback(key, x, y, w, h, fallbackFn) {
+function drawAssetOrFallback(key, x, y, fallbackFn, customW, customH) {
   const a = ASSETS[key];
   if (a && a.loaded && a.img) {
+    const w = customW || a.w;
+    const h = customH || a.h;
     ctx.drawImage(a.img, x - w/2, y - h/2, w, h);
+    return true;
   } else {
-    fallbackFn();
+    if (fallbackFn) fallbackFn();
+    return false;
   }
 }
 
@@ -2040,8 +2044,24 @@ function drawPlayer() {
     }
   }
 
+  // === PNG 우선 (탑다운 펭귄) ===
   ctx.save();
   ctx.globalAlpha = p.alpha;
+  // 일반 지면 상태 그림자 (PNG 사용 시에도 표시)
+  if (now >= p.jumpUntil) {
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.ellipse(x + 2, y + 42, 40, 9, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  if (drawAssetOrFallback('player', x, y, null,
+      ASSETS.player.w * scale, ASSETS.player.h * scale)) {
+    ctx.restore();
+    return;
+  }
+
+  // === Fallback 일러스트 ===
   ctx.translate(x, y);
   ctx.scale(scale, scale);
 
@@ -2253,6 +2273,10 @@ function drawObstacle(obs, x) {
 }
 
 function drawCone(x, y) {
+  // PNG가 있으면 PNG 사용
+  if (drawAssetOrFallback('cone', x, y, null)) return;
+
+  // === Fallback 일러스트 ===
   // 그림자
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
@@ -2319,7 +2343,38 @@ function drawCone(x, y) {
 }
 
 function drawBoss(x, y, avoided) {
-  // x, y는 더 이상 사용 안 함 (lane 무시) — 화면 전체 가로 장벽
+  // PNG가 있으면 사용 (lane 무시, 화면 중앙에 가로로 표시)
+  const a = ASSETS.boss;
+  if (a && a.loaded && a.img) {
+    ctx.save();
+    if (avoided) ctx.globalAlpha = 0.4;
+    // 화면 너비에 맞춰 표시 (가로 장벽)
+    const targetW = Math.min(W - 20, a.w);
+    const ratio = a.h / a.w;
+    const targetH = targetW * ratio;
+    ctx.drawImage(a.img, (W - targetW) / 2, y - targetH / 2, targetW, targetH);
+    // JUMP 안내 화살표 (회피 전에만)
+    if (!avoided) {
+      const arrowY = y - targetH / 2 - 18;
+      const pulse = (Math.sin(performance.now() * 0.008) + 1) / 2;
+      ctx.fillStyle = `rgba(255, 60, 60, ${0.6 + pulse * 0.4})`;
+      ctx.beginPath();
+      ctx.moveTo(W/2, arrowY);
+      ctx.lineTo(W/2 - 12, arrowY - 14);
+      ctx.lineTo(W/2 + 12, arrowY - 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = `rgba(255, 60, 60, ${0.7 + pulse * 0.3})`;
+      ctx.font = '900 14px "Noto Sans KR", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('JUMP!', W/2, arrowY - 22);
+      ctx.textAlign = 'start';
+    }
+    ctx.restore();
+    return;
+  }
+
+  // === Fallback 일러스트 ===
   ctx.save();
   if (avoided) ctx.globalAlpha = 0.4;
 
@@ -2500,16 +2555,31 @@ function drawPlayerDribble(x, y, dir, timeSinceHit) {
   const breath = Math.sin(now * 0.005) * 1.5;
   const charShake = swingPower * 3;
 
+  // 그림자
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(x + 4, y + 60 + breath, 50, 11, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // PNG가 있으면 사용 (드리블 화면에서는 좌우 살짝 흔들기)
+  const a = ASSETS.player;
+  if (a && a.loaded && a.img) {
+    ctx.save();
+    ctx.translate(x + charShake * dir * -0.3, y + breath);
+    // 탭 시 살짝 회전 (드리블 동작감)
+    ctx.rotate(swingPower * dir * 0.05);
+    const w = a.w * 1.2; // 드리블 화면에서는 약간 크게
+    const h = a.h * 1.2;
+    ctx.drawImage(a.img, -w/2, -h/2, w, h);
+    ctx.restore();
+    return;
+  }
+
+  // === Fallback 일러스트 ===
   ctx.save();
   ctx.translate(x + charShake * dir * -0.3, y + breath);
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-
-  // 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.beginPath();
-  ctx.ellipse(0, 60, 50, 11, 0, 0, Math.PI*2);
-  ctx.fill();
 
   // === 스틱 (좌우 스윙) ===
   const stickAngle = dir * (0.6 + swingPower * 0.6);
@@ -2758,6 +2828,39 @@ function drawSkate(x, y) {
   const now = performance.now();
   const float = Math.sin(now * 0.005) * 5;
   const yPos = y + float;
+
+  // PNG가 있으면 사용
+  if (drawAssetOrFallback('skate', x, yPos, null)) {
+    // 황금 글로우 오라 추가
+    ctx.save();
+    const glowR = 60 + Math.sin(now * 0.006) * 10;
+    const glowGrad = ctx.createRadialGradient(x, yPos, 5, x, yPos, glowR);
+    glowGrad.addColorStop(0, 'rgba(255, 215, 0, 0.6)');
+    glowGrad.addColorStop(0.4, 'rgba(255, 215, 0, 0.3)');
+    glowGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(x, yPos, glowR, 0, Math.PI*2);
+    ctx.fill();
+    // 회전 별 스파클
+    for (let i=0; i<4; i++) {
+      const angle = (now * 0.003 + i * Math.PI / 2);
+      const sx = x + Math.cos(angle) * 50;
+      const sy = yPos + Math.sin(angle) * 35;
+      const sparkleAlpha = (Math.sin(now * 0.01 + i) + 1) / 2;
+      ctx.fillStyle = `rgba(255, 255, 255, ${sparkleAlpha})`;
+      ctx.strokeStyle = `rgba(255, 215, 0, ${sparkleAlpha})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      drawStarPath(sx, sy, 4, 4, 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+    return;
+  }
+
+  // === Fallback 일러스트 ===
   const rotation = Math.sin(now * 0.004) * 0.18;
 
   ctx.save();
@@ -2893,7 +2996,36 @@ function drawEnergy(x, y) {
   // 부유 애니메이션
   const float = Math.sin(now * 0.004) * 4;
   const yPos = y + float;
-  // 회전
+
+  // PNG가 있으면 사용 (회전 없이, 부유만)
+  if (drawAssetOrFallback('energy', x, yPos, null)) {
+    // 글로우 오라는 PNG 위에 추가로 그리기
+    ctx.save();
+    const glowR = 50 + Math.sin(now * 0.005) * 6;
+    const glowGrad = ctx.createRadialGradient(x, yPos, 5, x, yPos, glowR);
+    glowGrad.addColorStop(0, 'rgba(255, 100, 180, 0)');
+    glowGrad.addColorStop(0.6, 'rgba(255, 100, 180, 0.15)');
+    glowGrad.addColorStop(1, 'rgba(255, 100, 180, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(x, yPos, glowR, 0, Math.PI*2);
+    ctx.fill();
+    // 별 스파클
+    for (let i=0; i<3; i++) {
+      const angle = (now * 0.002 + i * Math.PI * 2 / 3);
+      const sx = x + Math.cos(angle) * 40;
+      const sy = yPos + Math.sin(angle) * 40;
+      const sparkleAlpha = (Math.sin(now * 0.008 + i) + 1) / 2;
+      ctx.fillStyle = `rgba(255, 255, 255, ${sparkleAlpha * 0.9})`;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+    return;
+  }
+
+  // === Fallback 일러스트 ===
   const rotation = Math.sin(now * 0.003) * 0.15;
 
   ctx.save();
@@ -3341,17 +3473,42 @@ function renderShooting() {
 
 // 골대 (입체적, 닌텐도 풍)
 function drawGoalNet(cx, baseY, sh) {
-  const goalW = 340;
-  const goalH = 140;
-  const goalLeft = cx - goalW / 2;
-  const goalTop = baseY - goalH;
-  const depth = 50; // 골대 깊이감
-
   const now = performance.now();
   let netShake = 0;
   if (sh.animPhase === 'goal') {
     netShake = Math.sin((now - sh.animStart) * 0.03) * 10;
   }
+
+  // PNG가 있으면 사용
+  const a = ASSETS.goal;
+  if (a && a.loaded && a.img) {
+    ctx.save();
+    const drawW = a.w;
+    const drawH = a.h;
+    // 베이스 라인 기준으로 골대를 위로 그리기
+    const drawX = cx - drawW / 2 + netShake;
+    const drawY = baseY - drawH;
+    ctx.drawImage(a.img, drawX, drawY, drawW, drawH);
+
+    // 골인 시 빨강 글로우 테두리
+    if (sh.animPhase === 'goal') {
+      ctx.shadowColor = '#ff3050';
+      ctx.shadowBlur = 24;
+      ctx.strokeStyle = '#ff3050';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(drawX, drawY, drawW, drawH);
+      ctx.shadowBlur = 0;
+    }
+    ctx.restore();
+    return;
+  }
+
+  // === Fallback 일러스트 ===
+  const goalW = 340;
+  const goalH = 140;
+  const goalLeft = cx - goalW / 2;
+  const goalTop = baseY - goalH;
+  const depth = 50;
 
   ctx.save();
   ctx.lineJoin = 'round';
@@ -3540,12 +3697,45 @@ function drawGoalie(x, y, sh) {
   // 살짝 흔들기 (살아있음)
   const sway = Math.sin(now * 0.008) * 1.5;
 
+  // 그림자
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(x + 5, y + 80, 60, 12, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // PNG가 있으면 사용
+  const a = ASSETS.goalie;
+  if (a && a.loaded && a.img) {
+    ctx.save();
+    let drawX = x + sway;
+    let drawY = y - a.h / 2 + 60; // 발이 y 위치에 오도록
+
+    // 미스 다이빙 효과
+    if (sh && sh.animPhase === 'miss') {
+      const t = Math.min(1, (now - sh.animStart) / 1500);
+      const diveDir = sh.result.side === 'left' ? -1 : 1;
+      drawX += diveDir * 60 * Math.sin(t * Math.PI);
+      drawY += Math.sin(t * Math.PI) * 20;
+      ctx.rotate(diveDir * 0.3 * Math.sin(t * Math.PI));
+      ctx.translate(drawX, drawY);
+    } else if (sh && sh.animPhase === 'goal') {
+      const t = Math.min(1, (now - sh.animStart) / 2000);
+      drawY += t * 40;
+      ctx.translate(drawX, drawY);
+      ctx.rotate(t * 0.3);
+    } else {
+      ctx.translate(drawX, drawY);
+    }
+    ctx.drawImage(a.img, -a.w/2, 0, a.w, a.h);
+    ctx.restore();
+    return;
+  }
+
+  // === Fallback 일러스트 ===
   ctx.save();
   ctx.translate(x + sway, y);
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-
-  // === 다리 패드 (큰 흰색 패드, 양쪽) ===
   ctx.strokeStyle = '#0a1228';
   ctx.lineWidth = 3.5;
   // 왼쪽 패드
