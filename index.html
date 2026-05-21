@@ -4504,7 +4504,12 @@ async function renderLeaderboard() {
   const el = document.getElementById('leaderboard-list');
   if (!el) return;
   // 로딩 표시
-  el.innerHTML = '<div class="ranking-empty">LOADING...</div>';
+  el.innerHTML = `
+    <div class="ranking-empty" style="padding: 40px 0;">
+      <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+      <div style="font-size: 15px; font-weight: 700; letter-spacing: 2px; color: var(--c-primary-glow);">LOADING LEADERBOARD</div>
+    </div>
+  `;
 
   const allList = await loadRanking();
   const list = allList.slice(0, 10);
@@ -4546,9 +4551,20 @@ document.getElementById('start-btn').addEventListener('touchend', (e) => {
 document.getElementById('save-btn').addEventListener('click', async (e) => {
   e.preventDefault();
   const name = document.getElementById('name-input').value.trim().slice(0, 5) || 'ANON';
-  // 결과 화면 → 리더보드 화면으로 전환 (먼저 전환하고 로딩 보여줌)
+  // 즉시 화면 전환 + 로딩 UI 표시
   document.getElementById('result-screen').classList.add('hidden');
   document.getElementById('leaderboard-screen').classList.remove('hidden');
+  const el = document.getElementById('leaderboard-list');
+  if (el) {
+    el.innerHTML = `
+      <div class="ranking-empty" style="padding: 40px 0;">
+        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+        <div style="font-size: 15px; font-weight: 700; letter-spacing: 2px; color: var(--c-primary-glow);">SAVING YOUR SCORE</div>
+        <div style="font-size: 12px; margin-top: 8px; color: var(--c-text-faint);">Loading leaderboard...</div>
+      </div>
+    `;
+  }
+  // 저장 + 리더보드 갱신
   await saveRanking(name, STATE.score);
   await renderLeaderboard();
 });
