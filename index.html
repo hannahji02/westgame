@@ -662,22 +662,19 @@
   <div class="screen" id="start-screen">
     <div class="brand-badge">MT 2026 · OFFICIAL ARCADE</div>
 
-    <div class="title-wrap">
+<div class="title-wrap">
       <h1 class="title">WEST <span class="title-accent">HOCKEY</span></h1>
-      <div class="title-year">2 0 2 6</div>
     </div>
-
-    <div class="subtitle">Ice Training Challenge</div>
 
     <div class="ranking-box">
       <div class="rules-list">
         <div class="rule-item">
           <div class="rule-title"><span class="rule-num">ROUND 1</span> Basic Training</div>
-          <div class="rule-desc">스와이프로 콘을 피하고, 점프로 감독님을 넘으세요. 스페셜 아이템을 먹어 에너지를 충전하거나 무적 모드를 발동시켜 보세요.</div>
+          <div class="rule-desc">탭으로 콘을 피하고, 점프로 감독님을 넘으세요. 스페셜 아이템을 먹어 에너지를 충전하거나 무적 모드를 발동시켜 보세요.</div>
         </div>
         <div class="rule-item">
           <div class="rule-title"><span class="rule-num">ROUND 2</span> Dribble Training</div>
-          <div class="rule-desc">정해진 시간 안에 최대한 많이 탭하세요. 피버타임에는 점수가 두 배로 차오릅니다.</div>
+          <div class="rule-desc">정해진 시간 안에 최대한 많이 탭하세요.</div>
         </div>
         <div class="rule-item">
           <div class="rule-title"><span class="rule-num">ROUND 3</span> Shooting Training</div>
@@ -689,7 +686,7 @@
     <button class="btn-primary" id="start-btn">START</button>
   </div>
 
-  <!-- 결과 화면 -->
+<!-- 결과 화면 -->
   <div class="screen hidden" id="result-screen">
     <div class="brand-badge">MISSION COMPLETE</div>
     <div class="result-label">Final Score</div>
@@ -702,6 +699,7 @@
       <button class="btn-secondary" id="save-btn">Save</button>
       <button class="btn-secondary" id="retry-btn">Retry</button>
     </div>
+    <div id="result-ranking-list" style="margin-top: 24px; min-width: 320px; max-width: 90vw; z-index: 1; position: relative;"></div>
   </div>
 </div>
 
@@ -4413,6 +4411,14 @@ function endGame() {
   document.getElementById('shooting-ui').classList.remove('active');
   document.getElementById('hud').style.display = 'none';
   document.getElementById('result-screen').classList.remove('hidden');
+  // Save 버튼 상태 초기화 (재시도 후 다시 저장 가능하도록)
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.textContent = 'Save';
+  saveBtn.disabled = false;
+  saveBtn.style.opacity = '1';
+  document.getElementById('name-input').disabled = false;
+  // 결과 화면 리더보드 갱신
+  renderRanking();
 
   // 점수 표시
   const scoreEl = document.getElementById('result-score');
@@ -4476,7 +4482,27 @@ function saveRanking(name, score) {
 
 function renderRanking() {
   const list = loadRanking().slice(0, 5);
+  // 결과 화면 리더보드도 동시 갱신
+  const resultEl = document.getElementById('result-ranking-list');
+  if (resultEl) {
+    if (list.length === 0) {
+      resultEl.innerHTML = '<div class="ranking-empty" style="background:rgba(255,255,255,0.06); border-radius:16px; padding:16px;">BE THE FIRST CHALLENGER</div>';
+    } else {
+      resultEl.innerHTML = `<div style="background:rgba(255,255,255,0.06); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:16px 20px;">
+        <div style="color:var(--c-gold); font-size:11px; font-weight:900; letter-spacing:3px; margin-bottom:10px; text-align:center;">🏆 LEADERBOARD</div>
+        ${list.map((r, i) => `
+          <div class="ranking-row">
+            <span class="rank">#${i+1}</span>
+            <span class="name">${escapeHtml(r.name)}</span>
+            <span class="score">${r.score}</span>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+  }
+
   const el = document.getElementById('ranking-list');
+  if (!el) return; // 시작화면에서 리더보드 카드를 제거했으므로 안전 가드
   if (list.length === 0) {
     el.innerHTML = '<div class="ranking-empty">BE THE FIRST CHALLENGER</div>';
     return;
@@ -4539,12 +4565,16 @@ document.getElementById('start-btn').addEventListener('touchend', (e) => {
 
 document.getElementById('save-btn').addEventListener('click', (e) => {
   e.preventDefault();
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn.disabled) return;
   const name = document.getElementById('name-input').value.trim().slice(0, 5) || 'ANON';
   saveRanking(name, STATE.score);
   renderRanking();
-  document.getElementById('result-screen').classList.add('hidden');
-  document.getElementById('start-screen').classList.remove('hidden');
-  STATE.phase = 'menu';
+  // 저장 완료 표시 후 잠시 머물기 (사용자가 본인 점수 확인 가능)
+  saveBtn.textContent = 'Saved ✓';
+  saveBtn.disabled = true;
+  saveBtn.style.opacity = '0.6';
+  document.getElementById('name-input').disabled = true;
 });
 
 document.getElementById('retry-btn').addEventListener('click', (e) => {
