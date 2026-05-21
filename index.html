@@ -302,6 +302,42 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.5px;
   }
+  .rank-delete {
+    background: transparent;
+    border: none;
+    color: var(--c-text-faint);
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-left: 8px;
+    transition: all 0.15s;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0;
+  }
+  .rank-delete:hover, .rank-delete:active {
+    background: rgba(255, 51, 85, 0.2);
+    color: var(--c-danger);
+  }
+  .rank-clear-all {
+    background: transparent;
+    border: 1px solid rgba(255, 51, 85, 0.4);
+    color: rgba(255, 51, 85, 0.8);
+    padding: 6px 16px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+  }
+  .rank-clear-all:active {
+    background: rgba(255, 51, 85, 0.15);
+  }
   .ranking-empty { color: var(--c-text-faint); text-align: center; font-size: 14px; padding: 20px 0; letter-spacing: 1px; }
 
   .btn-primary {
@@ -717,13 +753,14 @@ const CFG = {
 // assets/ 폴더의 파일이 존재하면 일러스트 대신 자동 사용
 // 파일이 없거나 로드 실패 시 일러스트 fallback
 const ASSETS = {
-  cone:   { path: 'cone.png',   img: null, loaded: false, w: 100, h: 110 },
+  cone:   { path: 'cone.png',   img: null, loaded: false, w: 70,  h: 77 },
   player: { path: 'player.png', img: null, loaded: false, w: 130, h: 140 },
-  energy: { path: 'energy.png', img: null, loaded: false, w: 90, h: 130 },
-  skate:  { path: 'skate.png',  img: null, loaded: false, w: 120, h: 100 },
+  energy: { path: 'energy.png', img: null, loaded: false, w: 63,  h: 91 },
+  skate:  { path: 'skate.png',  img: null, loaded: false, w: 84,  h: 70 },
   goalie: { path: 'goalie.png', img: null, loaded: false, w: 180, h: 240 },
   goal:   { path: 'goal.png',   img: null, loaded: false, w: 420, h: 200 },
-  boss:   { path: 'boss.png',   img: null, loaded: false, w: 600, h: 220 },
+  boss:   { path: 'boss.png',   img: null, loaded: false, w: 300, h: 200 },
+  puck:   { path: 'puck.png',   img: null, loaded: false, w: 70,  h: 28 },
 };
 
 function loadAssets() {
@@ -758,36 +795,36 @@ loadAssets();
 // ============================================================
 const PATTERNS = {
   A: [ // 좌익 폭격
-    [0.00,1,'cone'],[0.70,2,'cone'],[1.40,1,'cone'],[2.10,1,'boss'],[2.90,2,'cone'],
-    [3.60,3,'cone'],[3.60,1,'cone'],[4.30,1,'cone'],[5.00,1,'energy'],[5.25,1,'cone'],
-    [6.00,2,'boss'],[6.80,3,'cone'],[7.60,1,'cone'],[8.40,2,'cone'],[8.40,3,'cone'],
-    [9.20,1,'boss'],[10.00,2,'cone'],[10.80,3,'skate'],[11.60,1,'cone'],[12.40,2,'boss'],
-    [13.20,3,'cone'],[14.00,1,'cone'],[14.80,2,'energy'],[15.05,2,'cone'],[15.80,3,'boss'],
-    [16.80,1,'cone'],[17.80,2,'boss'],[18.80,3,'boss']
+    [0.00,1,'cone'],[0.89,2,'cone'],[1.79,1,'cone'],[2.68,1,'boss'],[3.70,2,'cone'],
+    [4.60,3,'cone'],[4.60,1,'cone'],[5.49,1,'cone'],[6.38,1,'energy'],[6.70,1,'cone'],
+    [7.66,2,'boss'],[8.68,3,'cone'],[9.70,1,'cone'],[10.72,2,'cone'],[10.72,3,'cone'],
+    [11.74,1,'boss'],[12.77,2,'cone'],[13.79,3,'skate'],[14.81,1,'cone'],[15.83,2,'boss'],
+    [16.85,3,'cone'],[17.87,1,'cone'],[18.89,2,'energy'],[19.21,2,'cone'],[20.17,3,'boss'],
+    [21.45,1,'cone'],[22.72,2,'boss'],[24.00,3,'boss']
   ],
   B: [ // 지그재그 댄스
-    [0.00,1,'cone'],[0.70,3,'cone'],[1.40,1,'cone'],[2.10,3,'boss'],[2.90,1,'cone'],
-    [3.60,3,'cone'],[4.30,2,'cone'],[5.00,2,'energy'],[5.25,2,'cone'],[6.00,1,'boss'],
-    [6.80,3,'cone'],[7.60,1,'cone'],[7.60,3,'cone'],[8.40,2,'boss'],[9.20,1,'cone'],
-    [10.00,3,'skate'],[10.80,2,'cone'],[11.60,1,'boss'],[12.40,3,'cone'],[13.20,2,'energy'],
-    [13.45,2,'cone'],[14.20,1,'cone'],[14.20,3,'cone'],[15.00,2,'boss'],[15.80,1,'cone'],
-    [16.80,3,'boss'],[17.80,2,'cone'],[18.80,1,'boss']
+    [0.00,1,'cone'],[0.89,3,'cone'],[1.79,1,'cone'],[2.68,3,'boss'],[3.70,1,'cone'],
+    [4.60,3,'cone'],[5.49,2,'cone'],[6.38,2,'energy'],[6.70,2,'cone'],[7.66,1,'boss'],
+    [8.68,3,'cone'],[9.70,1,'cone'],[9.70,3,'cone'],[10.72,2,'boss'],[11.74,1,'cone'],
+    [12.77,3,'skate'],[13.79,2,'cone'],[14.81,1,'boss'],[15.83,3,'cone'],[16.85,2,'energy'],
+    [17.17,2,'cone'],[18.13,1,'cone'],[18.13,3,'cone'],[19.15,2,'boss'],[20.17,1,'cone'],
+    [21.45,3,'boss'],[22.72,2,'cone'],[24.00,1,'boss']
   ],
   C: [ // 감독 러시
-    [0.00,2,'cone'],[0.70,1,'boss'],[1.50,3,'cone'],[2.20,2,'cone'],[2.90,3,'boss'],
-    [3.70,2,'cone'],[3.70,1,'cone'],[4.40,3,'cone'],[5.10,2,'energy'],[5.35,2,'cone'],
-    [6.10,1,'boss'],[6.90,2,'cone'],[7.60,3,'cone'],[7.60,1,'cone'],[8.40,2,'cone'],
-    [9.20,3,'skate'],[10.00,1,'boss'],[10.80,3,'cone'],[11.60,2,'cone'],[12.40,1,'cone'],
-    [13.20,3,'cone'],[14.00,2,'energy'],[14.25,2,'cone'],[15.00,1,'boss'],[16.00,3,'boss'],
-    [17.00,2,'cone'],[17.90,1,'cone'],[18.80,2,'boss']
+    [0.00,2,'cone'],[0.89,1,'boss'],[1.91,3,'cone'],[2.81,2,'cone'],[3.70,3,'boss'],
+    [4.72,2,'cone'],[4.72,1,'cone'],[5.62,3,'cone'],[6.51,2,'energy'],[6.83,2,'cone'],
+    [7.79,1,'boss'],[8.81,2,'cone'],[9.70,3,'cone'],[9.70,1,'cone'],[10.72,2,'cone'],
+    [11.74,3,'skate'],[12.77,1,'boss'],[13.79,3,'cone'],[14.81,2,'cone'],[15.83,1,'cone'],
+    [16.85,3,'cone'],[17.87,2,'energy'],[18.19,2,'cone'],[19.15,1,'boss'],[20.43,3,'boss'],
+    [21.70,2,'cone'],[22.85,1,'cone'],[24.00,2,'boss']
   ],
   D: [ // 센터 폭주
-    [0.00,2,'cone'],[0.70,2,'cone'],[1.40,1,'cone'],[2.10,2,'boss'],[2.90,3,'cone'],
-    [3.60,2,'cone'],[3.60,3,'cone'],[4.30,1,'boss'],[5.10,2,'cone'],[5.80,3,'energy'],
-    [6.05,3,'cone'],[6.80,2,'boss'],[7.60,1,'cone'],[7.60,3,'cone'],[8.40,2,'cone'],
-    [9.20,3,'skate'],[10.00,2,'cone'],[10.80,1,'cone'],[11.60,2,'boss'],[12.40,3,'cone'],
-    [13.20,2,'cone'],[14.00,1,'energy'],[14.25,1,'cone'],[15.00,3,'boss'],[16.00,2,'cone'],
-    [17.00,1,'cone'],[17.90,3,'boss'],[18.80,2,'boss']
+    [0.00,2,'cone'],[0.89,2,'cone'],[1.79,1,'cone'],[2.68,2,'boss'],[3.70,3,'cone'],
+    [4.60,2,'cone'],[4.60,3,'cone'],[5.49,1,'boss'],[6.51,2,'cone'],[7.40,3,'energy'],
+    [7.72,3,'cone'],[8.68,2,'boss'],[9.70,1,'cone'],[9.70,3,'cone'],[10.72,2,'cone'],
+    [11.74,3,'skate'],[12.77,2,'cone'],[13.79,1,'cone'],[14.81,2,'boss'],[15.83,3,'cone'],
+    [16.85,2,'cone'],[17.87,1,'energy'],[18.19,1,'cone'],[19.15,3,'boss'],[20.43,2,'cone'],
+    [21.70,1,'cone'],[22.85,3,'boss'],[24.00,2,'boss']
   ]
 };
 
@@ -1141,7 +1178,16 @@ function update(dt, now) {
 
   // 오브젝트 업데이트
   const tProgress = Math.min(1, STATE.elapsed / CFG.TRAINING_END);
-  let fallSpeed = CFG.FALL_SPEED_START + (CFG.FALL_SPEED_END - CFG.FALL_SPEED_START) * tProgress;
+  // 초반 1초는 천천히, 그 이후 빠르게
+  let fallSpeed;
+  if (STATE.elapsed < 1000) {
+    // 0~1초: FALL_SPEED_START의 70%로 시작해 천천히
+    fallSpeed = CFG.FALL_SPEED_START * 0.7;
+  } else {
+    // 1초 이후: 기존 속도 + 진행률에 따라 가속
+    const adjustedT = Math.min(1, (STATE.elapsed - 1000) / (CFG.TRAINING_END - 1000));
+    fallSpeed = CFG.FALL_SPEED_START + (CFG.FALL_SPEED_END - CFG.FALL_SPEED_START) * adjustedT;
+  }
   // 스케이트 부스트 시 낙하 가속
   const isSkating = now < STATE.skate.activeUntil;
   if (isSkating) fallSpeed *= CFG.SKATE_SPEED_MULT;
@@ -1491,7 +1537,7 @@ function updateShooting(dt, now) {
   } else {
     // 결과 애니메이션
     if (sh.animPhase === 'puckFly') {
-      const t = (now - sh.animStart) / 700;
+      const t = (now - sh.animStart) / 350;
       if (t >= 1) {
         if (sh.result.goal) {
           sh.animPhase = 'goal';
@@ -1601,77 +1647,48 @@ function render() {
     return;
   }
 
-  // === 빙판 배경 (실사 아이스링크) ===
-  // 기본 빙판 그라데이션
+  // === 빙판 배경 (단순 흰색 얼음 + 반사 효과) ===
   const iceGrad = ctx.createLinearGradient(0, 0, 0, H);
   iceGrad.addColorStop(0, '#f7fbff');
-  iceGrad.addColorStop(0.5, '#e3eef9');
-  iceGrad.addColorStop(1, '#cadcef');
+  iceGrad.addColorStop(0.5, '#e8f1fa');
+  iceGrad.addColorStop(1, '#dde9f5');
   ctx.fillStyle = iceGrad;
   ctx.fillRect(0, 0, W, H);
 
   const scrollOffset = STATE.bgScrollY;
 
-  // === 페인트 라인 시스템 (실제 NHL 링크) ===
-  // 라인이 위에서 아래로 스크롤되며 반복
-  if (!STATE.rinkLines) {
-    // 라인 시퀀스 정의: 무한 반복용 패턴 (단위: 화면 높이의 비율)
-    STATE.rinkLines = [
-      { offset: 0,    type: 'goal',   color: '#cc1f3a' },   // 골 라인 (빨강)
-      { offset: 280,  type: 'crease', color: '#4d9fff' },   // 골 크리스 (파란 반원 영역)
-      { offset: 560,  type: 'faceoff', color: '#cc1f3a' },  // 페이스오프 서클
-      { offset: 900,  type: 'blue',   color: '#2563cc' },   // 블루 라인 (두꺼운 파랑)
-      { offset: 1300, type: 'center', color: '#cc1f3a' },   // 센터 라인 (빨강 점선)
-      { offset: 1700, type: 'blue',   color: '#2563cc' },   // 두 번째 블루 라인
-      { offset: 2100, type: 'faceoff', color: '#cc1f3a' },  // 페이스오프
-      { offset: 2400, type: 'crease', color: '#4d9fff' },   // 골 크리스
-      { offset: 2680, type: 'goal',   color: '#cc1f3a' },   // 다음 골 라인
-    ];
-    STATE.rinkCycle = 2700; // 한 사이클 길이
-  }
-
-  // 각 라인을 스크롤 적용하여 그리기
-  const cycle = STATE.rinkCycle;
-  const baseOffset = scrollOffset % cycle;
-
-  for (let cycleI = -1; cycleI <= 1; cycleI++) {
-    for (const line of STATE.rinkLines) {
-      const yPos = (line.offset + cycleI * cycle - baseOffset);
-      if (yPos < -200 || yPos > H + 200) continue;
-      drawRinkLine(yPos, line);
-    }
-  }
-
-  // === 빙판 표면 디테일 (스크래치 + 반짝임) ===
+  // === 빙판 표면 디테일 (스크래치 - 속도감) ===
   if (!STATE.iceScratches) {
     STATE.iceScratches = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 40; i++) {
       STATE.iceScratches.push({
         x: Math.random(),
-        baseY: Math.random() * 1000,
-        len: 20 + Math.random() * 70,
-        angle: (Math.random() - 0.5) * 0.4,
-        alpha: 0.08 + Math.random() * 0.18,
+        baseY: Math.random() * 1200,
+        len: 25 + Math.random() * 80,
+        angle: (Math.random() - 0.5) * 0.3,
+        alpha: 0.08 + Math.random() * 0.12,
       });
     }
   }
   for (const sc of STATE.iceScratches) {
     const x = sc.x * W;
-    const y = ((sc.baseY + scrollOffset * 0.5) % (H + 200)) - 100;
+    // 스크롤 방향 반전: scrollOffset을 빼서 위로 스크롤 (사용자 앞으로 전진하는 효과)
+    const y = ((sc.baseY - scrollOffset * 0.5) % (H + 200) + (H + 200)) % (H + 200) - 100;
     ctx.strokeStyle = `rgba(140, 180, 220, ${sc.alpha})`;
-    ctx.lineWidth = 0.7;
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + Math.cos(sc.angle) * sc.len, y + Math.sin(sc.angle) * sc.len);
     ctx.stroke();
   }
 
+  // === 빙판 반짝임 ===
   if (!STATE.iceSparkles) {
     STATE.iceSparkles = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 30; i++) {
       STATE.iceSparkles.push({
         x: Math.random(),
-        baseY: Math.random() * 800,
+        baseY: Math.random() * 1000,
         size: 0.8 + Math.random() * 1.5,
         twinkle: Math.random() * Math.PI * 2,
       });
@@ -1680,18 +1697,18 @@ function render() {
   const _now = performance.now();
   for (const sp of STATE.iceSparkles) {
     const x = sp.x * W;
-    const y = ((sp.baseY + scrollOffset * 0.7) % (H + 200)) - 100;
+    const y = ((sp.baseY - scrollOffset * 0.7) % (H + 200) + (H + 200)) % (H + 200) - 100;
     const tw = (Math.sin(_now * 0.003 + sp.twinkle) + 1) / 2;
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + tw * 0.5})`;
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + tw * 0.5})`;
     ctx.beginPath();
     ctx.arc(x, y, sp.size, 0, Math.PI*2);
     ctx.fill();
   }
 
-  // 빙판 가장자리 비네팅
+  // 빙판 가장자리 비네팅 (입체감)
   const vGrad = ctx.createRadialGradient(W/2, H/2, H*0.3, W/2, H/2, H*0.8);
   vGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  vGrad.addColorStop(1, 'rgba(20, 40, 80, 0.3)');
+  vGrad.addColorStop(1, 'rgba(40, 70, 110, 0.18)');
   ctx.fillStyle = vGrad;
   ctx.fillRect(0, 0, W, H);
 
@@ -1735,7 +1752,8 @@ function render() {
     }
 
     // === 페이스오프 서클 (드리블 영역 표시) ===
-    const dribbleY = H * 0.62;
+    const dribbleY = H * 0.78; // 화면 하단으로 이동 (퍽 위치)
+    const playerY = H * 0.6;   // 퍽 위쪽 (사용자 위치, 중앙보다 약간 아래)
     const circleR = 130;
     // 푸른 페인트 채움 (서클 안)
     ctx.fillStyle = isFever ? 'rgba(255, 70, 100, 0.18)' : 'rgba(77, 159, 255, 0.18)';
@@ -1852,53 +1870,39 @@ function render() {
     ctx.ellipse(puckX + 5, puckY + 14, 36, 10, 0, 0, Math.PI*2);
     ctx.fill();
 
-    // === 퍽 본체 (두꺼운 외곽선, 닌텐도 스타일) ===
+    // === 퍽 본체 (입체적, 두꺼운 측면 + 광택) ===
     const shake = STATE.puckShake || 0;
     if (STATE.puckShake) STATE.puckShake = Math.max(0, STATE.puckShake - 0.7);
     const px = puckX + (Math.random()-0.5)*shake*0.3;
     const py = puckY + (Math.random()-0.5)*shake*0.3;
 
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.ellipse(px, py, 38, 12, 0, 0, Math.PI*2);
-    ctx.fill();
-    // 두꺼운 외곽선
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    // 상단 면 (더 어두운 회색, 닌텐도 평면 셰이딩)
-    ctx.fillStyle = '#3a3a3a';
-    ctx.beginPath();
-    ctx.ellipse(px, py - 2, 38, 6, 0, 0, Math.PI*2);
-    ctx.fill();
-    // 하이라이트
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.beginPath();
-    ctx.ellipse(px - 8, py - 4, 14, 2, 0, 0, Math.PI*2);
-    ctx.fill();
+    // PNG가 있으면 사용
+    if (drawAssetOrFallback('puck', px, py, null)) {
+      // PNG 위에 글로우만 추가
+    } else {
+      drawPuck3D(px, py, 40);
+    }
 
-    // === 플레이어 캐릭터 ===
-    // 임시로 STATE.player.x/y를 설정하여 drawPlayer 재사용
+    // === 플레이어 캐릭터 (퍽 위쪽) ===
     const savedX = STATE.player.x;
     const savedY = STATE.player.y;
     STATE.player.x = W/2;
-    STATE.player.y = dribbleY - 110;
-    // 스틱 각도를 STATE.dribble에 따라 미세 흔들기 - drawPlayer 내부에서 처리 안되므로 별도 그리기
-    drawPlayerDribble(W/2, dribbleY - 110, STATE.dribble.dir, timeSinceHit);
+    STATE.player.y = playerY;
+    drawPlayerDribble(W/2, playerY, STATE.dribble.dir, timeSinceHit);
     STATE.player.x = savedX;
     STATE.player.y = savedY;
 
-    // === 상단 타이틀 (두꺼운 외곽선 닌텐도식) ===
-    drawComicText(W/2, 90, isFever ? 'FEVER!' : 'DRIBBLE!',
+    // === 상단 타이틀 (HUD 카드 아래로 위치) ===
+    drawComicText(W/2, 200, isFever ? 'FEVER!' : 'DRIBBLE!',
       isFever ? 64 : 56,
       isFever ? '#ff3355' : '#4d9fff',
       '#0a1228', 4);
 
-    // 점수 가이드 (작게)
+    // 점수 가이드
     ctx.fillStyle = isFever ? '#cc1f3a' : '#1e5fd4';
     ctx.font = '900 18px "Noto Sans KR", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(isFever ? '+50 / TAP' : '+30 / TAP', W/2, 130);
+    ctx.fillText(isFever ? '+50 / TAP' : '+30 / TAP', W/2, 240);
     ctx.textAlign = 'start';
 
     // 파티클
@@ -2343,15 +2347,14 @@ function drawCone(x, y) {
 }
 
 function drawBoss(x, y, avoided) {
-  // PNG가 있으면 사용 (lane 무시, 화면 중앙에 가로로 표시)
+  // PNG가 있으면 사용 (lane 무시, 화면 중앙에 정사이즈 표시)
   const a = ASSETS.boss;
   if (a && a.loaded && a.img) {
     ctx.save();
     if (avoided) ctx.globalAlpha = 0.4;
-    // 화면 너비에 맞춰 표시 (가로 장벽)
-    const targetW = Math.min(W - 20, a.w);
-    const ratio = a.h / a.w;
-    const targetH = targetW * ratio;
+    // 원본 비율 정사이즈로 화면 중앙 표시
+    const targetW = a.w;
+    const targetH = a.h;
     ctx.drawImage(a.img, (W - targetW) / 2, y - targetH / 2, targetW, targetH);
     // JUMP 안내 화살표 (회피 전에만)
     if (!avoided) {
@@ -3327,7 +3330,7 @@ function renderShooting() {
   // === 퍽 ===
   let puckX = W/2, puckY = H * 0.85;
   if (sh.animPhase === 'puckFly') {
-    const t = (now - sh.animStart) / 700;
+    const t = (now - sh.animStart) / 350;
     const targetX = sh.result.side === 'left' ? W/2 - creaseR * 0.7 : W/2 + creaseR * 0.7;
     puckX = W/2 + (targetX - W/2) * t;
     puckY = H * 0.85 + (goalY - 10 - H * 0.85) * t;
@@ -3342,37 +3345,26 @@ function renderShooting() {
 
   // 퍽 트레일 (날아갈 때)
   if (sh.animPhase === 'puckFly') {
-    const t = (now - sh.animStart) / 700;
+    const t = (now - sh.animStart) / 350;
     const targetX = sh.result.side === 'left' ? W/2 - creaseR * 0.7 : W/2 + creaseR * 0.7;
-    for (let i=1; i<=6; i++) {
-      const trailT = Math.max(0, t - i * 0.05);
+    for (let i=1; i<=8; i++) {
+      const trailT = Math.max(0, t - i * 0.04);
       const tx = W/2 + (targetX - W/2) * trailT;
       const ty = H * 0.85 + (goalY - 10 - H * 0.85) * trailT;
-      const alpha = (1 - i/7) * 0.6;
+      const alpha = (1 - i/9) * 0.7;
       ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       ctx.beginPath();
-      ctx.ellipse(tx, ty, 22 - i*2, 7 - i*0.5, 0, 0, Math.PI*2);
+      ctx.ellipse(tx, ty, 24 - i*2, 8 - i*0.6, 0, 0, Math.PI*2);
       ctx.fill();
     }
   }
 
-  // 퍽 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.beginPath();
-  ctx.ellipse(puckX + 4, puckY + 14, 24, 7, 0, 0, Math.PI*2);
-  ctx.fill();
-  // 퍽 본체 (두꺼운 외곽선)
-  ctx.fillStyle = '#1a1a1a';
-  ctx.beginPath();
-  ctx.ellipse(puckX, puckY, 26, 9, 0, 0, Math.PI*2);
-  ctx.fill();
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-  ctx.fillStyle = '#3a3a3a';
-  ctx.beginPath();
-  ctx.ellipse(puckX, puckY - 1.5, 26, 4, 0, 0, Math.PI*2);
-  ctx.fill();
+  // 퍽 (입체적, PNG 우선)
+  if (drawAssetOrFallback('puck', puckX, puckY, null)) {
+    // PNG 사용 시 추가 효과 없음
+  } else {
+    drawPuck3D(puckX, puckY, 28);
+  }
 
   // === 게이지 (준비 완료 후 항상) ===
   if (sh.ready && !sh.locked) {
@@ -3955,6 +3947,87 @@ function drawStarPath(cx, cy, points, outerR, innerR) {
   ctx.closePath();
 }
 
+// 입체적인 하키 퍽 (측면 두께 + 상단 광택 + 하단 그림자)
+function drawPuck3D(cx, cy, radiusX) {
+  const radiusY = radiusX * 0.32;
+  const sideHeight = radiusX * 0.28;
+
+  // 하단 그림자
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.beginPath();
+  ctx.ellipse(cx + 4, cy + sideHeight + 8, radiusX * 0.95, radiusY * 0.7, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // 측면 본체 (어두운 회색, 두꺼움)
+  ctx.fillStyle = '#0a0a0a';
+  ctx.beginPath();
+  ctx.moveTo(cx - radiusX, cy);
+  ctx.lineTo(cx - radiusX, cy + sideHeight);
+  ctx.ellipse(cx, cy + sideHeight, radiusX, radiusY, 0, Math.PI, 0, true);
+  ctx.lineTo(cx + radiusX, cy);
+  ctx.ellipse(cx, cy, radiusX, radiusY, 0, 0, Math.PI);
+  ctx.closePath();
+  ctx.fill();
+
+  // 측면 그라데이션 (입체감)
+  const sideGrad = ctx.createLinearGradient(cx - radiusX, cy, cx + radiusX, cy);
+  sideGrad.addColorStop(0, 'rgba(90, 90, 90, 0.7)');
+  sideGrad.addColorStop(0.3, 'rgba(20, 20, 20, 0)');
+  sideGrad.addColorStop(0.7, 'rgba(20, 20, 20, 0)');
+  sideGrad.addColorStop(1, 'rgba(90, 90, 90, 0.7)');
+  ctx.fillStyle = sideGrad;
+  ctx.beginPath();
+  ctx.moveTo(cx - radiusX, cy);
+  ctx.lineTo(cx - radiusX, cy + sideHeight);
+  ctx.ellipse(cx, cy + sideHeight, radiusX, radiusY, 0, Math.PI, 0, true);
+  ctx.lineTo(cx + radiusX, cy);
+  ctx.ellipse(cx, cy, radiusX, radiusY, 0, 0, Math.PI);
+  ctx.closePath();
+  ctx.fill();
+
+  // 측면 세로 홈 라인 (퍽 표면 텍스처)
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 12; i++) {
+    const angle = Math.PI + (i / 12) * Math.PI;
+    const lx = cx + Math.cos(angle) * radiusX * 0.97;
+    const lyTop = cy + Math.abs(Math.sin(angle)) * radiusY * 0.05;
+    ctx.beginPath();
+    ctx.moveTo(lx, lyTop);
+    ctx.lineTo(lx, lyTop + sideHeight * 0.85);
+    ctx.stroke();
+  }
+
+  // 상단 면 (위에서 본 검정 원판, 그라데이션)
+  const topGrad = ctx.createRadialGradient(cx - radiusX*0.3, cy - radiusY*0.5, 2, cx, cy, radiusX);
+  topGrad.addColorStop(0, '#4a4a4a');
+  topGrad.addColorStop(0.5, '#2a2a2a');
+  topGrad.addColorStop(1, '#0a0a0a');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, radiusX, radiusY, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // 상단 외곽선
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, radiusX, radiusY, 0, 0, Math.PI*2);
+  ctx.stroke();
+
+  // 상단 광택 (큰 하이라이트)
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(cx - radiusX*0.25, cy - radiusY*0.4, radiusX*0.55, radiusY*0.35, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // 상단 작은 점 하이라이트
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.beginPath();
+  ctx.ellipse(cx - radiusX*0.3, cy - radiusY*0.55, radiusX*0.18, radiusY*0.2, 0, 0, Math.PI*2);
+  ctx.fill();
+}
+
 function drawGauge(value, locked=false) {
   const gx = W - 80;
   const gy = H * 0.5;
@@ -4170,8 +4243,37 @@ function renderRanking() {
       <span class="rank">#${i+1}</span>
       <span class="name">${escapeHtml(r.name)}</span>
       <span class="score">${r.score}</span>
+      <button class="rank-delete" data-idx="${i}" aria-label="delete">×</button>
     </div>
-  `).join('');
+  `).join('') + `
+    <div style="margin-top: 12px; text-align: center;">
+      <button class="rank-clear-all" id="rank-clear-all">CLEAR ALL</button>
+    </div>
+  `;
+  // 개별 삭제 핸들러
+  el.querySelectorAll('.rank-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      const fullList = loadRanking();
+      // 슬라이스된 인덱스이므로 원본에서 동일 인덱스 삭제
+      fullList.splice(idx, 1);
+      localStorage.setItem(RANK_KEY, JSON.stringify(fullList));
+      renderRanking();
+    });
+  });
+  // 전체 삭제 핸들러
+  const clearBtn = document.getElementById('rank-clear-all');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Clear all leaderboard records?')) {
+        localStorage.removeItem(RANK_KEY);
+        renderRanking();
+      }
+    });
+  }
 }
 
 function escapeHtml(s) {
