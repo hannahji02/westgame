@@ -340,10 +340,53 @@
   }
   .ranking-empty { color: var(--c-text-faint); text-align: center; font-size: 14px; padding: 20px 0; letter-spacing: 1px; }
 
+  /* 시작화면 룰 설명 카드 */
+  .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .rule-item {
+    padding: 4px 0;
+  }
+  .rule-item + .rule-item {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 14px;
+  }
+  .rule-title {
+    color: var(--c-text);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .rule-num {
+    color: var(--c-primary-glow);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 3px 9px;
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    border-radius: 999px;
+    background: rgba(0, 212, 255, 0.08);
+    text-transform: uppercase;
+  }
+  .rule-desc {
+    color: var(--c-text-dim);
+    font-size: 12px;
+    line-height: 1.6;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
   .btn-primary {
     background: linear-gradient(135deg, var(--c-accent) 0%, #ff6b35 100%);
     color: var(--c-text);
     border: none;
+    margin-top: 16px;
     padding: 20px 56px;
     font-size: 22px;
     font-weight: 900;
@@ -627,21 +670,23 @@
     <div class="subtitle">Ice Training Challenge</div>
 
     <div class="ranking-box">
-      <div class="ranking-title">
-        <span class="ranking-title-text">Leaderboard</span>
-        <span class="ranking-title-icon">🏆</span>
+      <div class="rules-list">
+        <div class="rule-item">
+          <div class="rule-title"><span class="rule-num">ROUND 1</span> Basic Training</div>
+          <div class="rule-desc">스와이프로 콘을 피하고, 점프로 감독님을 넘으세요. 스페셜 아이템을 먹어 에너지를 충전하거나 무적 모드를 발동시켜 보세요.</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-title"><span class="rule-num">ROUND 2</span> Dribble Training</div>
+          <div class="rule-desc">정해진 시간 안에 최대한 많이 탭하세요. 피버타임에는 점수가 두 배로 차오릅니다.</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-title"><span class="rule-num">ROUND 3</span> Shooting Training</div>
+          <div class="rule-desc">게이지가 100에 닿는 순간 손을 떼세요. 골리의 움직임을 읽고 반대 방향을 노리는 것이 핵심입니다.</div>
+        </div>
       </div>
-      <div id="ranking-list"></div>
     </div>
 
     <button class="btn-primary" id="start-btn">START</button>
-
-    <div class="guide-text">
-      <b>← →</b> SWIPE TO MOVE · <b>↑</b> SWIPE TO JUMP<br>
-      🟠 DODGE · 😡 JUMP OVER · 🟢 COLLECT
-    </div>
-
-    <div class="footer-mark">FROZEN STADIUM · 2026</div>
   </div>
 
   <!-- 결과 화면 -->
