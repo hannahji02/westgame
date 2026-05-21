@@ -1755,8 +1755,8 @@ function render() {
     }
 
     // === 페이스오프 서클 (드리블 영역 표시) ===
-    const dribbleY = H * 0.88; // 퍽을 화면 매우 아래로
-    const playerY = H * 0.72;  // 펭귄을 퍽 바로 위 (스틱과 일직선)
+    const dribbleY = H * 0.55; // 퍽을 화면 중앙
+    const playerY = H * 0.72;  // 펭귄은 유지 (퍽보다 아래에 위치)
     const circleR = 100;
     // 푸른 페인트 채움 (서클 안)
     ctx.fillStyle = isFever ? 'rgba(255, 70, 100, 0.18)' : 'rgba(77, 159, 255, 0.18)';
