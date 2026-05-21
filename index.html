@@ -732,9 +732,9 @@ const CFG = {
   SHOOT_GAUGE_MIN: 51, // 51 이상이어야 슛 발사
 
   // 골리 움직임
-  GOALIE_PERIOD_MS: 750, // 1왕복 (1.5초→0.75초, 2배 빠름)
-  GOALIE_RANGE_RATIO: 0.7, // 골대 폭의 70% 안에서 왕복
-  GOALIE_CENTER_TOLERANCE: 0.2, // 중앙 ±20%는 50% 확률
+  GOALIE_PERIOD_MS: 375, // 1왕복 (750→375, 2배 빠름)
+  GOALIE_RANGE_RATIO: 0.7,
+  GOALIE_CENTER_TOLERANCE: 0.2,
 
   // 색상
   COL_BG_ICE: '#e8f0ff',
@@ -795,36 +795,36 @@ loadAssets();
 // ============================================================
 const PATTERNS = {
   A: [ // 좌익 폭격
-    [0.00,1,'cone'],[0.89,2,'cone'],[1.79,1,'cone'],[2.68,1,'boss'],[3.70,2,'cone'],
-    [4.60,3,'cone'],[4.60,1,'cone'],[5.49,1,'cone'],[6.38,1,'energy'],[6.70,1,'cone'],
-    [7.66,2,'boss'],[8.68,3,'cone'],[9.70,1,'cone'],[10.72,2,'cone'],[10.72,3,'cone'],
-    [11.74,1,'boss'],[12.77,2,'cone'],[13.79,3,'skate'],[14.81,1,'cone'],[15.83,2,'boss'],
-    [16.85,3,'cone'],[17.87,1,'cone'],[18.89,2,'energy'],[19.21,2,'cone'],[20.17,3,'boss'],
-    [21.45,1,'cone'],[22.72,2,'boss'],[24.00,3,'boss']
+    [0.00,1,'cone'],[0.24,2,'cone'],[0.63,1,'cone'],[1.12,1,'boss'],[1.75,2,'cone'],
+    [2.38,3,'cone'],[2.38,1,'cone'],[3.04,1,'cone'],[3.76,1,'energy'],[4.02,1,'cone'],
+    [4.85,2,'boss'],[5.78,3,'cone'],[6.75,1,'cone'],[7.77,2,'cone'],[7.77,3,'cone'],
+    [8.82,1,'boss'],[9.92,2,'cone'],[11.05,3,'skate'],[12.21,1,'cone'],[13.40,2,'boss'],
+    [14.63,3,'cone'],[15.88,1,'cone'],[17.16,2,'energy'],[17.57,2,'cone'],[18.81,3,'boss'],
+    [20.51,1,'cone'],[22.23,2,'boss'],[24.00,3,'boss']
   ],
   B: [ // 지그재그 댄스
-    [0.00,1,'cone'],[0.89,3,'cone'],[1.79,1,'cone'],[2.68,3,'boss'],[3.70,1,'cone'],
-    [4.60,3,'cone'],[5.49,2,'cone'],[6.38,2,'energy'],[6.70,2,'cone'],[7.66,1,'boss'],
-    [8.68,3,'cone'],[9.70,1,'cone'],[9.70,3,'cone'],[10.72,2,'boss'],[11.74,1,'cone'],
-    [12.77,3,'skate'],[13.79,2,'cone'],[14.81,1,'boss'],[15.83,3,'cone'],[16.85,2,'energy'],
-    [17.17,2,'cone'],[18.13,1,'cone'],[18.13,3,'cone'],[19.15,2,'boss'],[20.17,1,'cone'],
-    [21.45,3,'boss'],[22.72,2,'cone'],[24.00,1,'boss']
+    [0.00,1,'cone'],[0.24,3,'cone'],[0.63,1,'cone'],[1.12,3,'boss'],[1.75,1,'cone'],
+    [2.38,3,'cone'],[3.04,2,'cone'],[3.76,2,'energy'],[4.02,2,'cone'],[4.85,1,'boss'],
+    [5.78,3,'cone'],[6.75,1,'cone'],[6.75,3,'cone'],[7.77,2,'boss'],[8.82,1,'cone'],
+    [9.92,3,'skate'],[11.05,2,'cone'],[12.21,1,'boss'],[13.40,3,'cone'],[14.63,2,'energy'],
+    [15.02,2,'cone'],[16.21,1,'cone'],[16.21,3,'cone'],[17.50,2,'boss'],[18.81,1,'cone'],
+    [20.51,3,'boss'],[22.23,2,'cone'],[24.00,1,'boss']
   ],
   C: [ // 감독 러시
-    [0.00,2,'cone'],[0.89,1,'boss'],[1.91,3,'cone'],[2.81,2,'cone'],[3.70,3,'boss'],
-    [4.72,2,'cone'],[4.72,1,'cone'],[5.62,3,'cone'],[6.51,2,'energy'],[6.83,2,'cone'],
-    [7.79,1,'boss'],[8.81,2,'cone'],[9.70,3,'cone'],[9.70,1,'cone'],[10.72,2,'cone'],
-    [11.74,3,'skate'],[12.77,1,'boss'],[13.79,3,'cone'],[14.81,2,'cone'],[15.83,1,'cone'],
-    [16.85,3,'cone'],[17.87,2,'energy'],[18.19,2,'cone'],[19.15,1,'boss'],[20.43,3,'boss'],
-    [21.70,2,'cone'],[22.85,1,'cone'],[24.00,2,'boss']
+    [0.00,2,'cone'],[0.24,1,'boss'],[0.69,3,'cone'],[1.19,2,'cone'],[1.75,3,'boss'],
+    [2.46,2,'cone'],[2.46,1,'cone'],[3.14,3,'cone'],[3.86,2,'energy'],[4.13,2,'cone'],
+    [4.97,1,'boss'],[5.90,2,'cone'],[6.75,3,'cone'],[6.75,1,'cone'],[7.77,2,'cone'],
+    [8.82,3,'skate'],[9.92,1,'boss'],[11.05,3,'cone'],[12.21,2,'cone'],[13.40,1,'cone'],
+    [14.63,3,'cone'],[15.88,2,'energy'],[16.28,2,'cone'],[17.50,1,'boss'],[19.16,3,'boss'],
+    [20.84,2,'cone'],[22.41,1,'cone'],[24.00,2,'boss']
   ],
   D: [ // 센터 폭주
-    [0.00,2,'cone'],[0.89,2,'cone'],[1.79,1,'cone'],[2.68,2,'boss'],[3.70,3,'cone'],
-    [4.60,2,'cone'],[4.60,3,'cone'],[5.49,1,'boss'],[6.51,2,'cone'],[7.40,3,'energy'],
-    [7.72,3,'cone'],[8.68,2,'boss'],[9.70,1,'cone'],[9.70,3,'cone'],[10.72,2,'cone'],
-    [11.74,3,'skate'],[12.77,2,'cone'],[13.79,1,'cone'],[14.81,2,'boss'],[15.83,3,'cone'],
-    [16.85,2,'cone'],[17.87,1,'energy'],[18.19,1,'cone'],[19.15,3,'boss'],[20.43,2,'cone'],
-    [21.70,1,'cone'],[22.85,3,'boss'],[24.00,2,'boss']
+    [0.00,2,'cone'],[0.24,2,'cone'],[0.63,1,'cone'],[1.12,2,'boss'],[1.75,3,'cone'],
+    [2.38,2,'cone'],[2.38,3,'cone'],[3.04,1,'boss'],[3.86,2,'cone'],[4.62,3,'energy'],
+    [4.90,3,'cone'],[5.78,2,'boss'],[6.75,1,'cone'],[6.75,3,'cone'],[7.77,2,'cone'],
+    [8.82,3,'skate'],[9.92,2,'cone'],[11.05,1,'cone'],[12.21,2,'boss'],[13.40,3,'cone'],
+    [14.63,2,'cone'],[15.88,1,'energy'],[16.28,1,'cone'],[17.50,3,'boss'],[19.16,2,'cone'],
+    [20.84,1,'cone'],[22.41,3,'boss'],[24.00,2,'boss']
   ]
 };
 
@@ -1178,15 +1178,12 @@ function update(dt, now) {
 
   // 오브젝트 업데이트
   const tProgress = Math.min(1, STATE.elapsed / CFG.TRAINING_END);
-  // 초반 1초는 천천히, 그 이후 빠르게
+  // 0~2초: 2배속, 2초 이후: 3배속
   let fallSpeed;
-  if (STATE.elapsed < 1000) {
-    // 0~1초: FALL_SPEED_START의 70%로 시작해 천천히
-    fallSpeed = CFG.FALL_SPEED_START * 0.7;
+  if (STATE.elapsed < 2000) {
+    fallSpeed = CFG.FALL_SPEED_START * 2;
   } else {
-    // 1초 이후: 기존 속도 + 진행률에 따라 가속
-    const adjustedT = Math.min(1, (STATE.elapsed - 1000) / (CFG.TRAINING_END - 1000));
-    fallSpeed = CFG.FALL_SPEED_START + (CFG.FALL_SPEED_END - CFG.FALL_SPEED_START) * adjustedT;
+    fallSpeed = CFG.FALL_SPEED_START * 3;
   }
   // 스케이트 부스트 시 낙하 가속
   const isSkating = now < STATE.skate.activeUntil;
@@ -1468,6 +1465,7 @@ function enterShooting() {
 }
 
 function initShootRound() {
+  const isFirstRound = STATE.shootRound === 1;
   STATE.shoot = {
     active: true,
     value: 0,
@@ -1476,15 +1474,20 @@ function initShootRound() {
     holdStart: 0,
     locked: false,
     result: null,
-    ready: false,
-    countdown: 3,
+    ready: !isFirstRound, // 첫 라운드만 false (카운트다운 대기), 이후 즉시 ready
+    countdown: isFirstRound ? 3 : 0,
     countdownStart: performance.now(),
     animStart: 0,
     animPhase: null,
     side: 'left',
-    goalieT: Math.random(), // 라운드마다 골리 시작 위치 랜덤
+    goalieT: Math.random(),
   };
-  showCountdown(3);
+  if (isFirstRound) {
+    showCountdown(3);
+  } else {
+    // 카운트다운 화면 숨기기
+    document.getElementById('countdown').style.display = 'none';
+  }
 }
 
 function showCountdown(n) {
@@ -1752,9 +1755,9 @@ function render() {
     }
 
     // === 페이스오프 서클 (드리블 영역 표시) ===
-    const dribbleY = H * 0.78; // 화면 하단으로 이동 (퍽 위치)
-    const playerY = H * 0.6;   // 퍽 위쪽 (사용자 위치, 중앙보다 약간 아래)
-    const circleR = 130;
+    const dribbleY = H * 0.88; // 퍽을 화면 매우 아래로
+    const playerY = H * 0.72;  // 펭귄을 퍽 바로 위 (스틱과 일직선)
+    const circleR = 100;
     // 푸른 페인트 채움 (서클 안)
     ctx.fillStyle = isFever ? 'rgba(255, 70, 100, 0.18)' : 'rgba(77, 159, 255, 0.18)';
     ctx.beginPath();
@@ -1898,11 +1901,11 @@ function render() {
       isFever ? '#ff3355' : '#4d9fff',
       '#0a1228', 4);
 
-    // 점수 가이드
+    // 점수 가이드 (타이틀과 충분히 떨어뜨림)
     ctx.fillStyle = isFever ? '#cc1f3a' : '#1e5fd4';
     ctx.font = '900 18px "Noto Sans KR", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(isFever ? '+50 / TAP' : '+30 / TAP', W/2, 240);
+    ctx.fillText(isFever ? '+50 / TAP' : '+30 / TAP', W/2, 270);
     ctx.textAlign = 'start';
 
     // 파티클
@@ -3286,14 +3289,15 @@ function renderShooting() {
   // === 골대 (입체적) ===
   drawGoalNet(W/2, goalY, sh);
 
-  // === 골리 (좌우 움직임) ===
+  // === 골리 (좌우 움직임, 골대 바로 앞을 가로막음) ===
   const goalieCenter = W/2;
   const goalieMaxOffset = 130;
+  const goalieAnchorY = goalY - 60; // 골대 베이스 위로 올림 (골대 안쪽 가로막음)
   let goalieX, goalieY;
   if (sh.locked && sh.result) {
     const lockedNorm = Math.sin(sh.goalieT * Math.PI * 2) * CFG.GOALIE_RANGE_RATIO;
     goalieX = goalieCenter + lockedNorm * goalieMaxOffset;
-    goalieY = goalY - 8;
+    goalieY = goalieAnchorY;
     if (sh.animPhase === 'miss') {
       const t = Math.min(1, (now - sh.animStart) / 1500);
       const dive = sh.result.side === 'left' ? -45 : 45;
@@ -3307,7 +3311,7 @@ function renderShooting() {
   } else {
     const norm = Math.sin(sh.goalieT * Math.PI * 2) * CFG.GOALIE_RANGE_RATIO;
     goalieX = goalieCenter + norm * goalieMaxOffset;
-    goalieY = goalY - 8;
+    goalieY = goalieAnchorY;
   }
   drawGoalie(goalieX, goalieY, sh);
 
@@ -3700,7 +3704,8 @@ function drawGoalie(x, y, sh) {
   if (a && a.loaded && a.img) {
     ctx.save();
     let drawX = x + sway;
-    let drawY = y - a.h / 2 + 60; // 발이 y 위치에 오도록
+    let drawY = y; // anchor 기준점이 골리 중앙
+    const halfH = a.h / 2;
 
     // 미스 다이빙 효과
     if (sh && sh.animPhase === 'miss') {
@@ -3708,8 +3713,8 @@ function drawGoalie(x, y, sh) {
       const diveDir = sh.result.side === 'left' ? -1 : 1;
       drawX += diveDir * 60 * Math.sin(t * Math.PI);
       drawY += Math.sin(t * Math.PI) * 20;
-      ctx.rotate(diveDir * 0.3 * Math.sin(t * Math.PI));
       ctx.translate(drawX, drawY);
+      ctx.rotate(diveDir * 0.3 * Math.sin(t * Math.PI));
     } else if (sh && sh.animPhase === 'goal') {
       const t = Math.min(1, (now - sh.animStart) / 2000);
       drawY += t * 40;
@@ -3718,7 +3723,8 @@ function drawGoalie(x, y, sh) {
     } else {
       ctx.translate(drawX, drawY);
     }
-    ctx.drawImage(a.img, -a.w/2, 0, a.w, a.h);
+    // 골리 중앙이 (0,0)에 오도록 그리기
+    ctx.drawImage(a.img, -a.w/2, -halfH, a.w, a.h);
     ctx.restore();
     return;
   }
