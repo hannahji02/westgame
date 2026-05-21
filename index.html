@@ -4477,24 +4477,38 @@ function endGame() {
 // 순위표
 // ============================================================
 const RANK_KEY = 'westHockeyRanking';
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyVzRi1V0VLXmaZVM4S4OCPWhk9ktzPSNaCaKb_BEC8FLMarMtyNc9dgjH9UMmNq6QsLA/exec';
 
-function loadRanking() {
+async function loadRanking() {
   try {
-    return JSON.parse(localStorage.getItem(RANK_KEY) || '[]');
-  } catch(e) { return []; }
+    const res = await fetch(SHEET_API_URL);
+    return await res.json();
+  } catch(e) {
+    console.error('Load failed', e);
+    return [];
+  }
 }
 
-function saveRanking(name, score) {
-  const list = loadRanking();
-  list.push({ name, score, date: new Date().toISOString().slice(0,10) });
-  list.sort((a,b) => b.score - a.score);
-  localStorage.setItem(RANK_KEY, JSON.stringify(list.slice(0, 20)));
+async function saveRanking(name, score) {
+  try {
+    await fetch(SHEET_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ name, score }),
+    });
+  } catch(e) {
+    console.error('Save failed', e);
+  }
 }
 
-function renderLeaderboard() {
-  const list = loadRanking().slice(0, 10);
+async function renderLeaderboard() {
   const el = document.getElementById('leaderboard-list');
   if (!el) return;
+  // 로딩 표시
+  el.innerHTML = '<div class="ranking-empty">LOADING...</div>';
+
+  const allList = await loadRanking();
+  const list = allList.slice(0, 10);
+
   if (list.length === 0) {
     el.innerHTML = '<div class="ranking-empty">NO RECORDS YET</div>';
     return;
@@ -4504,37 +4518,9 @@ function renderLeaderboard() {
       <span class="rank">#${i+1}</span>
       <span class="name">${escapeHtml(r.name)}</span>
       <span class="score">${r.score}</span>
-      <button class="rank-delete" data-idx="${i}" aria-label="delete">×</button>
     </div>
-  `).join('') + `
-    <div style="margin-top: 12px; text-align: center;">
-      <button class="rank-clear-all" id="rank-clear-all">CLEAR ALL</button>
-    </div>
-  `;
-  // 개별 삭제 핸들러
-  el.querySelectorAll('.rank-delete').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const idx = parseInt(btn.dataset.idx);
-      const fullList = loadRanking();
-      fullList.splice(idx, 1);
-      localStorage.setItem(RANK_KEY, JSON.stringify(fullList));
-      renderLeaderboard();
-    });
-  });
-  // 전체 삭제 핸들러
-  const clearBtn = document.getElementById('rank-clear-all');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (confirm('Clear all leaderboard records?')) {
-        localStorage.removeItem(RANK_KEY);
-        renderLeaderboard();
-      }
-    });
-  }
-}
+  `).join('');
+}  
 
 // 기존 renderRanking 호환용 (하위 호환 보장, 호출 시 무동작)
 function renderRanking() { /* 시작화면에서 리더보드 카드를 제거했으므로 무동작 */ }
@@ -4557,14 +4543,14 @@ document.getElementById('start-btn').addEventListener('touchend', (e) => {
   startGame();
 });
 
-document.getElementById('save-btn').addEventListener('click', (e) => {
+document.getElementById('save-btn').addEventListener('click', async (e) => {
   e.preventDefault();
   const name = document.getElementById('name-input').value.trim().slice(0, 5) || 'ANON';
-  saveRanking(name, STATE.score);
-  renderLeaderboard();
-  // 결과 화면 → 리더보드 화면으로 전환
+  // 결과 화면 → 리더보드 화면으로 전환 (먼저 전환하고 로딩 보여줌)
   document.getElementById('result-screen').classList.add('hidden');
   document.getElementById('leaderboard-screen').classList.remove('hidden');
+  await saveRanking(name, STATE.score);
+  await renderLeaderboard();
 });
 
 document.getElementById('leaderboard-retry-btn').addEventListener('click', (e) => {
