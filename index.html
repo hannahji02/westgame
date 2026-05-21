@@ -1351,14 +1351,14 @@ function update(dt, now) {
 
   // 오브젝트 업데이트
   const tProgress = Math.min(1, STATE.elapsed / CFG.TRAINING_END);
-  // 0~2초: 1.4배속, 2~22초: 2.2배속, 22~25초: 3.0배속 (후반 폭격)
+// 0~2초: 0.98배속, 2~22초: 1.54배속, 22~25초: 2.1배속 (전 구간 30% 감속)
   let baseFallSpeed;
   if (STATE.elapsed < 2000) {
-    baseFallSpeed = CFG.FALL_SPEED_START * 1.4;
+    baseFallSpeed = CFG.FALL_SPEED_START * 0.98;
   } else if (STATE.elapsed < 22000) {
-    baseFallSpeed = CFG.FALL_SPEED_START * 2.2;
+    baseFallSpeed = CFG.FALL_SPEED_START * 1.54;
   } else {
-    baseFallSpeed = CFG.FALL_SPEED_START * 3.0;
+    baseFallSpeed = CFG.FALL_SPEED_START * 2.1;
   }
   // 스케이트 부스트 시 낙하 가속
   const isSkating = now < STATE.skate.activeUntil;
