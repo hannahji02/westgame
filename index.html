@@ -662,7 +662,7 @@
   <div class="screen" id="start-screen">
     <div class="brand-badge">MT 2026 · OFFICIAL ARCADE</div>
 
-<div class="title-wrap">
+    <div class="title-wrap">
       <h1 class="title">WEST <span class="title-accent">HOCKEY</span></h1>
     </div>
 
@@ -684,9 +684,11 @@
     </div>
 
     <button class="btn-primary" id="start-btn">START</button>
+
+    <div class="footer-mark">FROZEN STADIUM · 2026</div>
   </div>
 
-<!-- 결과 화면 -->
+  <!-- 결과 화면 -->
   <div class="screen hidden" id="result-screen">
     <div class="brand-badge">MISSION COMPLETE</div>
     <div class="result-label">Final Score</div>
@@ -699,7 +701,17 @@
       <button class="btn-secondary" id="save-btn">Save</button>
       <button class="btn-secondary" id="retry-btn">Retry</button>
     </div>
-    <div id="result-ranking-list" style="margin-top: 24px; min-width: 320px; max-width: 90vw; z-index: 1; position: relative;"></div>
+  </div>
+
+  <!-- 리더보드 화면 (세이브 후) -->
+  <div class="screen hidden" id="leaderboard-screen">
+    <div class="brand-badge">🏆 LEADERBOARD</div>
+    <div class="ranking-box" style="margin-top: 24px; margin-bottom: 32px;">
+      <div id="leaderboard-list"></div>
+    </div>
+    <div class="result-buttons">
+      <button class="btn-secondary" id="leaderboard-retry-btn">Play Again</button>
+    </div>
   </div>
 </div>
 
@@ -843,7 +855,7 @@ const PATTERNS = {
     [5.07,2,'boss'],[5.99,3,'cone'],[6.95,1,'cone'],[7.96,2,'cone'],[7.96,3,'cone'],
     [9.00,1,'boss'],[10.08,2,'cone'],[11.20,3,'skate'],[12.35,1,'cone'],[13.52,2,'boss'],
     [14.74,3,'cone'],[15.97,1,'cone'],[17.24,2,'energy'],[17.64,2,'cone'],[18.87,3,'boss'],
-    [20.55,1,'cone'],[22.25,2,'boss'],[24.00,3,'boss']
+    [20.55,1,'cone'],[22.00,2,'cone'],[22.40,3,'cone'],[22.80,1,'cone'],[23.20,2,'boss'],[23.70,3,'cone'],[24.20,1,'cone']
   ],
   B: [ // 지그재그 댄스
     [0.00,1,'cone'],[0.24,3,'cone'],[0.62,1,'cone'],[1.31,3,'boss'],[2.01,1,'cone'],
@@ -851,7 +863,7 @@ const PATTERNS = {
     [5.99,3,'cone'],[6.95,1,'cone'],[6.95,3,'cone'],[7.96,2,'boss'],[9.00,1,'cone'],
     [10.08,3,'skate'],[11.20,2,'cone'],[12.35,1,'boss'],[13.52,3,'cone'],[14.74,2,'energy'],
     [15.12,2,'cone'],[16.30,1,'cone'],[16.30,3,'cone'],[17.57,2,'boss'],[18.87,1,'cone'],
-    [20.55,3,'boss'],[22.25,2,'cone'],[24.00,1,'boss']
+    [20.55,3,'boss'],[22.00,1,'cone'],[22.40,2,'cone'],[22.80,3,'cone'],[23.20,1,'cone'],[23.70,2,'boss'],[24.20,3,'cone']
   ],
   C: [ // 감독 러시
     [0.00,2,'cone'],[0.68,1,'boss'],[1.35,3,'cone'],[1.84,2,'cone'],[2.51,3,'boss'],
@@ -859,7 +871,7 @@ const PATTERNS = {
     [5.62,1,'boss'],[6.52,2,'cone'],[7.34,3,'cone'],[7.34,1,'cone'],[8.33,2,'cone'],
     [9.34,3,'skate'],[10.40,1,'boss'],[11.49,3,'cone'],[12.61,2,'cone'],[13.76,1,'cone'],
     [14.95,3,'cone'],[16.16,2,'energy'],[16.54,2,'cone'],[17.72,1,'boss'],[19.33,3,'boss'],
-    [20.95,2,'cone'],[22.46,1,'cone'],[24.00,2,'boss']
+    [20.95,2,'cone'],[22.00,3,'cone'],[22.40,1,'cone'],[22.80,2,'cone'],[23.20,3,'boss'],[23.70,1,'cone'],[24.20,2,'cone']
   ],
   D: [ // 센터 폭주
     [0.00,2,'cone'],[0.24,2,'cone'],[0.62,1,'cone'],[1.31,2,'boss'],[2.00,3,'cone'],
@@ -867,7 +879,7 @@ const PATTERNS = {
     [5.15,3,'cone'],[6.02,2,'boss'],[6.98,1,'cone'],[6.98,3,'cone'],[7.98,2,'cone'],
     [9.02,3,'skate'],[10.11,2,'cone'],[11.22,1,'cone'],[12.37,2,'boss'],[13.54,3,'cone'],
     [14.75,2,'cone'],[15.99,1,'energy'],[16.38,1,'cone'],[17.59,3,'boss'],[19.22,2,'cone'],
-    [20.88,1,'cone'],[22.43,3,'boss'],[24.00,2,'boss']
+    [20.88,1,'cone'],[22.00,2,'cone'],[22.40,3,'cone'],[22.80,1,'cone'],[23.20,2,'boss'],[23.70,3,'cone'],[24.20,1,'cone']
   ]
 };
 
@@ -1269,6 +1281,7 @@ function startGame() {
 
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('leaderboard-screen').classList.add('hidden');
   document.getElementById('hud').style.display = 'flex';
   document.getElementById('fever-overlay').classList.remove('active');
   document.getElementById('shooting-ui').classList.remove('active');
@@ -1338,12 +1351,14 @@ function update(dt, now) {
 
   // 오브젝트 업데이트
   const tProgress = Math.min(1, STATE.elapsed / CFG.TRAINING_END);
-  // 0~2초: 1.4배속, 2초 이후: 2.2배속 (중간 난이도)
+  // 0~2초: 1.4배속, 2~22초: 2.2배속, 22~25초: 3.0배속 (후반 폭격)
   let baseFallSpeed;
   if (STATE.elapsed < 2000) {
     baseFallSpeed = CFG.FALL_SPEED_START * 1.4;
-  } else {
+  } else if (STATE.elapsed < 22000) {
     baseFallSpeed = CFG.FALL_SPEED_START * 2.2;
+  } else {
+    baseFallSpeed = CFG.FALL_SPEED_START * 3.0;
   }
   // 스케이트 부스트 시 낙하 가속
   const isSkating = now < STATE.skate.activeUntil;
@@ -4411,14 +4426,10 @@ function endGame() {
   document.getElementById('shooting-ui').classList.remove('active');
   document.getElementById('hud').style.display = 'none';
   document.getElementById('result-screen').classList.remove('hidden');
-  // Save 버튼 상태 초기화 (재시도 후 다시 저장 가능하도록)
-  const saveBtn = document.getElementById('save-btn');
-  saveBtn.textContent = 'Save';
-  saveBtn.disabled = false;
-  saveBtn.style.opacity = '1';
+  document.getElementById('leaderboard-screen').classList.add('hidden');
+  // 이름 입력 초기화
+  document.getElementById('name-input').value = '';
   document.getElementById('name-input').disabled = false;
-  // 결과 화면 리더보드 갱신
-  renderRanking();
 
   // 점수 표시
   const scoreEl = document.getElementById('result-score');
@@ -4480,31 +4491,12 @@ function saveRanking(name, score) {
   localStorage.setItem(RANK_KEY, JSON.stringify(list.slice(0, 20)));
 }
 
-function renderRanking() {
-  const list = loadRanking().slice(0, 5);
-  // 결과 화면 리더보드도 동시 갱신
-  const resultEl = document.getElementById('result-ranking-list');
-  if (resultEl) {
-    if (list.length === 0) {
-      resultEl.innerHTML = '<div class="ranking-empty" style="background:rgba(255,255,255,0.06); border-radius:16px; padding:16px;">BE THE FIRST CHALLENGER</div>';
-    } else {
-      resultEl.innerHTML = `<div style="background:rgba(255,255,255,0.06); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:16px 20px;">
-        <div style="color:var(--c-gold); font-size:11px; font-weight:900; letter-spacing:3px; margin-bottom:10px; text-align:center;">🏆 LEADERBOARD</div>
-        ${list.map((r, i) => `
-          <div class="ranking-row">
-            <span class="rank">#${i+1}</span>
-            <span class="name">${escapeHtml(r.name)}</span>
-            <span class="score">${r.score}</span>
-          </div>
-        `).join('')}
-      </div>`;
-    }
-  }
-
-  const el = document.getElementById('ranking-list');
-  if (!el) return; // 시작화면에서 리더보드 카드를 제거했으므로 안전 가드
+function renderLeaderboard() {
+  const list = loadRanking().slice(0, 10);
+  const el = document.getElementById('leaderboard-list');
+  if (!el) return;
   if (list.length === 0) {
-    el.innerHTML = '<div class="ranking-empty">BE THE FIRST CHALLENGER</div>';
+    el.innerHTML = '<div class="ranking-empty">NO RECORDS YET</div>';
     return;
   }
   el.innerHTML = list.map((r, i) => `
@@ -4526,10 +4518,9 @@ function renderRanking() {
       e.stopPropagation();
       const idx = parseInt(btn.dataset.idx);
       const fullList = loadRanking();
-      // 슬라이스된 인덱스이므로 원본에서 동일 인덱스 삭제
       fullList.splice(idx, 1);
       localStorage.setItem(RANK_KEY, JSON.stringify(fullList));
-      renderRanking();
+      renderLeaderboard();
     });
   });
   // 전체 삭제 핸들러
@@ -4539,11 +4530,14 @@ function renderRanking() {
       e.preventDefault();
       if (confirm('Clear all leaderboard records?')) {
         localStorage.removeItem(RANK_KEY);
-        renderRanking();
+        renderLeaderboard();
       }
     });
   }
 }
+
+// 기존 renderRanking 호환용 (하위 호환 보장, 호출 시 무동작)
+function renderRanking() { /* 시작화면에서 리더보드 카드를 제거했으므로 무동작 */ }
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -4565,16 +4559,18 @@ document.getElementById('start-btn').addEventListener('touchend', (e) => {
 
 document.getElementById('save-btn').addEventListener('click', (e) => {
   e.preventDefault();
-  const saveBtn = document.getElementById('save-btn');
-  if (saveBtn.disabled) return;
   const name = document.getElementById('name-input').value.trim().slice(0, 5) || 'ANON';
   saveRanking(name, STATE.score);
-  renderRanking();
-  // 저장 완료 표시 후 잠시 머물기 (사용자가 본인 점수 확인 가능)
-  saveBtn.textContent = 'Saved ✓';
-  saveBtn.disabled = true;
-  saveBtn.style.opacity = '0.6';
-  document.getElementById('name-input').disabled = true;
+  renderLeaderboard();
+  // 결과 화면 → 리더보드 화면으로 전환
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('leaderboard-screen').classList.remove('hidden');
+});
+
+document.getElementById('leaderboard-retry-btn').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('leaderboard-screen').classList.add('hidden');
+  startGame();
 });
 
 document.getElementById('retry-btn').addEventListener('click', (e) => {
