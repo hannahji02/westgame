@@ -4518,9 +4518,14 @@ async function renderLeaderboard() {
     el.innerHTML = '<div class="ranking-empty">NO RECORDS YET</div>';
     return;
   }
-  // 본인 점수 + 순위 계산
+  // 본인 점수 + 순위 계산 (이름+점수 매칭)
+  const savedName = document.getElementById('name-input').value.trim().slice(0, 5) || 'ANON';
   const myScore = STATE.score;
-  const myRank = allList.findIndex(r => r.score === myScore) + 1; // 1-indexed, 0이면 미진입
+  // 이름+점수로 본인 행 찾기, 없으면 점수만으로 매칭
+  let myIdx = allList.findIndex(r => r.name === savedName && r.score === myScore);
+  if (myIdx === -1) myIdx = allList.findIndex(r => r.score === myScore);
+  // 공동 순위 계산: 본인보다 점수 높은 사람 수 + 1
+  const myRank = myIdx === -1 ? 0 : (allList.filter(r => r.score > myScore).length + 1);
   const inTop10 = myRank > 0 && myRank <= 10;
 
   let myStatusHTML = '';
@@ -4550,13 +4555,16 @@ async function renderLeaderboard() {
     `;
   }
 
-  el.innerHTML = list.map((r, i) => `
+  // 공동 순위 계산: 각 행의 점수보다 높은 점수 가진 사람 수 + 1
+  el.innerHTML = list.map((r, i) => {
+    const displayRank = list.filter(x => x.score > r.score).length + 1;
+    return `
     <div class="ranking-row">
-      <span class="rank">#${i+1}</span>
+      <span class="rank">#${displayRank}</span>
       <span class="name">${escapeHtml(r.name)}</span>
       <span class="score">${r.score}</span>
-    </div>
-  `).join('') + `
+    </div>`;
+  }).join('') + `
     <div style="text-align: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: var(--c-text-faint); letter-spacing: 2px; font-weight: 700;">
       ★ TOP 10 ONLY ★
     </div>
