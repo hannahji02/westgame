@@ -685,9 +685,10 @@
 
     <button class="btn-primary" id="start-btn">START</button>
 
+    <button class="btn-secondary" id="view-ranking-btn" style="margin-top: 16px;">🏆 현재 기록 보기</button>
+
     <div class="footer-mark">FROZEN STADIUM · 2026</div>
   </div>
-
   <!-- 결과 화면 -->
   <div class="screen hidden" id="result-screen">
     <div class="brand-badge">MISSION COMPLETE</div>
@@ -710,11 +711,10 @@
       <div id="leaderboard-list"></div>
     </div>
     <div class="result-buttons">
+      <button class="btn-secondary" id="leaderboard-back-btn">Back to Menu</button>
       <button class="btn-secondary" id="leaderboard-retry-btn">Play Again</button>
     </div>
   </div>
-</div>
-
 <script>
 'use strict';
 
@@ -4521,6 +4521,8 @@ async function renderLeaderboard() {
   // 본인 점수 + 순위 계산 (이름+점수 매칭)
   const savedName = document.getElementById('name-input').value.trim().slice(0, 5) || 'ANON';
   const myScore = STATE.score;
+  // 게임 안 하고 단순 조회 시 본인 카드 숨김
+  const isViewOnly = STATE.phase === 'menu';
   // 이름+점수로 본인 행 찾기, 없으면 점수만으로 매칭
   let myIdx = allList.findIndex(r => r.name === savedName && r.score === myScore);
   if (myIdx === -1) myIdx = allList.findIndex(r => r.score === myScore);
@@ -4568,7 +4570,7 @@ async function renderLeaderboard() {
     <div style="text-align: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: var(--c-text-faint); letter-spacing: 2px; font-weight: 700;">
       ★ TOP 10 ONLY ★
     </div>
-  ` + myStatusHTML;
+  ` + (isViewOnly ? '' : myStatusHTML);
 }
 
 // 기존 renderRanking 호환용 (하위 호환 보장, 호출 시 무동작)
@@ -4629,6 +4631,34 @@ document.getElementById('retry-btn').addEventListener('click', (e) => {
   e.preventDefault();
   document.getElementById('result-screen').classList.add('hidden');
   startGame();
+});
+
+// 시작 화면 → 현재 기록 보기 (게임 안 하고 리더보드만 확인)
+document.getElementById('view-ranking-btn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('leaderboard-screen').classList.remove('hidden');
+  // 로딩 UI 표시
+  const el = document.getElementById('leaderboard-list');
+  if (el) {
+    el.innerHTML = `
+      <div class="ranking-empty" style="padding: 40px 0;">
+        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+        <div style="font-size: 15px; font-weight: 700; letter-spacing: 2px; color: var(--c-primary-glow);">LOADING LEADERBOARD</div>
+        <div style="font-size: 11px; margin-top: 16px; color: var(--c-text-faint); line-height: 1.6;">
+          초보자가 만들어서 로딩이 좀 느려요 🥲<br>잠시만 기다려 주세요...
+        </div>
+      </div>
+    `;
+  }
+  await renderLeaderboard();
+});
+
+// 리더보드 → 메뉴로 돌아가기
+document.getElementById('leaderboard-back-btn').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('leaderboard-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
 });
 
 // 페이지 로드 시
